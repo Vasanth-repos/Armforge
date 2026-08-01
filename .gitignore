@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.dll
+*.dylib
+
+# C / C++ build outputs
+build/
+build_baseline/
+CMakeCache.txt
+CMakeFiles/
+*.o
+*.a
+*.exe
+
+# Python Virtual Environments
+venv/
+.venv/
+armforge_env/
+env/
+ENV/
+
+# Large Model Files & Downloads (GGUF / Safetensors)
+*.gguf
+*.bin
+*.safetensors
+models/
+llama.cpp/models/
+
+# Cloned dependencies
+llama.cpp/
+
+# Environment Variables & Secrets
+.env
+.env.local
+
+# IDEs & System Junk
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Agent & Logs
+.system_generated/
+*.log
