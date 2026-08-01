@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
-source ~/armforge_env/bin/activate
-cd ~/armforge
+[ -f ~/armforge_env/bin/activate ] && source ~/armforge_env/bin/activate
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
 echo "=== Baseline Benchmark (llama.cpp WITHOUT KleidiAI) ==="
 
 # Build without KleidiAI for fair comparison
@@ -23,8 +24,12 @@ SERVER_PID=$!
 echo "Waiting 20s for model to load..."
 sleep 20
 
-cd ~/armforge
-python benchmark/run_bench.py --mode baseline
+cd "$REPO_ROOT"
+if [ -f "backend/benchmark/run_bench.py" ]; then
+  python3 backend/benchmark/run_bench.py --mode baseline
+else
+  python3 benchmark/run_bench.py --mode baseline
+fi
 
 kill $SERVER_PID 2>/dev/null || true
 wait $SERVER_PID 2>/dev/null || true

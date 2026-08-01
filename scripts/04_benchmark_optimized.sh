@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
-source ~/armforge_env/bin/activate
-cd ~/armforge
+[ -f ~/armforge_env/bin/activate ] && source ~/armforge_env/bin/activate
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
 echo "=== Optimized Benchmark (KleidiAI + Speculative Decoding) ==="
 
 # Start optimized server in background
@@ -20,8 +21,12 @@ SERVER_PID=$!
 echo "Waiting 25s for both models to load..."
 sleep 25
 
-cd ~/armforge
-python benchmark/run_bench.py --mode llama
+cd "$REPO_ROOT"
+if [ -f "backend/benchmark/run_bench.py" ]; then
+  python3 backend/benchmark/run_bench.py --mode llama
+else
+  python3 benchmark/run_bench.py --mode llama
+fi
 
 kill $SERVER_PID 2>/dev/null || true
 wait $SERVER_PID 2>/dev/null || true

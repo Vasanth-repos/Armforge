@@ -1,6 +1,7 @@
 #!/bin/bash
-source ~/armforge_env/bin/activate
-cd ~/armforge
+[ -f ~/armforge_env/bin/activate ] && source ~/armforge_env/bin/activate
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
 echo "Dashboard: http://$(curl -s ifconfig.me 2>/dev/null || echo 'YOUR_IP'):8080"
 if [ -f "backend/app.py" ]; then
   uvicorn backend.app:app --host 0.0.0.0 --port 8080 --reload
