@@ -8,23 +8,12 @@
 
 ## 📑 Table of Contents
 1. [Project Overview & Quick Start](#-project-overview--quick-start)
-2. [About the Project (Hackathon Story)](#-about-the-project)
-   - [Inspiration](#inspiration)
-   - [What it does](#what-it-does)
-   - [How we built it](#how-we-built-it)
-   - [Challenges we ran into](#challenges-we-ran-into)
-   - [Accomplishments that we're proud of](#accomplishments-that-were-proud-of)
-   - [What we learned](#what-we-learned)
-   - [What's next for ArmForge](#whats-next-for-armforge)
-3. [Technical Build & Architecture Specification](#-technical-build--architecture-specification)
-   - [Corrections Matrix (v2 vs v3)](#corrections-applied-vs-v2)
-   - [Repository Structure](#repository-structure)
-   - [Infrastructure Setup (Oracle Cloud A1)](#infrastructure-requirements)
-4. [Benchmark Suite & Execution Pipeline](#-benchmark-suite--execution-pipeline)
-   - [Performance Comparison Table](#performance-comparison-table)
-   - [Visual Throughput & TTFT Bar Charts](#visual-performance-bar-charts)
-5. [Developer Tools & Containerization](#-developer-tools--containerization)
-6. [Tags & Try-It-Out Links](#-tags--try-it-out-links)
+2. [Complete Tutorial & Operations Guide](TUTORIAL.md)
+3. [About the Project (Hackathon Story)](#-about-the-project)
+4. [Technical Build & Architecture Specification](#-technical-build--architecture-specification)
+5. [Benchmark Suite & Execution Pipeline](#-benchmark-suite--execution-pipeline)
+6. [Developer Tools & Containerization](#-developer-tools--containerization)
+7. [Tags & Try-It-Out Links](#-tags--try-it-out-links)
 
 ---
 
