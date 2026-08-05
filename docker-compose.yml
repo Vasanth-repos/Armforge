@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  armforge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: armforge_suite
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    volumes:
+      - ./results:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1

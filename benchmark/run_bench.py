@@ -1,12 +1,16 @@
 """
-Benchmark tokens/sec, TTFT, and throughput against any OpenAI-compatible endpoint.
+Benchmark tokens/sec, TTFT, throughput.
 
 Usage:
-  python benchmark/run_bench.py --mode llama   # llama.cpp server on :8000
-  python benchmark/run_bench.py --mode sglang  # SGLang server on :30000
-  python benchmark/run_bench.py --mode baseline # baseline server on :8001
+  python benchmark/run_bench.py --mode baseline  --port 8001
+  python benchmark/run_bench.py --mode kleidiai  --port 8000
+  python benchmark/run_bench.py --mode optimized --port 8000
+  python benchmark/run_bench.py --mode sglang    --port 30000
+
+WARMUP: One throwaway request is sent before measurement starts.
+This ensures KV cache paths and JIT code are warm for fair comparison.
 """
-import time, json, argparse, statistics, os
+import time, json, argparse, statistics, os, platform, subprocess
 from datetime import datetime
 import requests
 
@@ -18,42 +22,44 @@ PROMPTS = [
     "Write a Python function that computes Fibonacci numbers efficiently.",
 ]
 
-PORTS = {"llama": 8000, "sglang": 30000, "baseline": 8001}
-
 def check_server(base_url, timeout=5):
     try:
         r = requests.get(f"{base_url}/health", timeout=timeout)
-        return r.status_code in (200, 404)  # 404 = running but no /health route
+        return r.status_code in (200, 404)
     except Exception:
         return False
 
-def measure_ttft(base_url, prompt, max_tokens=5, timeout=60):
-    """Time To First Token via streaming."""
-    start = time.perf_counter()
-    first = None
+def warmup(base_url):
+    """Single warmup request — not recorded in results."""
     try:
-        with requests.post(
-            f"{base_url}/v1/completions",
+        requests.post(f"{base_url}/v1/completions",
+            json={"prompt": "warmup", "max_tokens": 5, "stream": False},
+            timeout=60)
+        print("  Warmup OK")
+    except Exception as e:
+        print(f"  Warmup failed (non-fatal): {e}")
+
+def measure_ttft(base_url, prompt, max_tokens=5, timeout=60):
+    """Time To First Token — streaming."""
+    start = time.perf_counter()
+    try:
+        with requests.post(f"{base_url}/v1/completions",
             json={"prompt": prompt, "max_tokens": max_tokens, "stream": True},
-            stream=True, timeout=timeout
-        ) as r:
+            stream=True, timeout=timeout) as r:
             for chunk in r.iter_lines():
                 if chunk and chunk != b"data: [DONE]":
-                    first = time.perf_counter() - start
-                    break
+                    return time.perf_counter() - start, None
     except Exception as e:
         return None, str(e)
-    return first, None
+    return None, "no chunks received"
 
 def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
-    """Tokens per second for full generation."""
+    """Tokens per second — full generation, non-streaming."""
     start = time.perf_counter()
     try:
-        r = requests.post(
-            f"{base_url}/v1/completions",
+        r = requests.post(f"{base_url}/v1/completions",
             json={"prompt": prompt, "max_tokens": max_tokens, "stream": False},
-            timeout=timeout
-        )
+            timeout=timeout)
         elapsed = time.perf_counter() - start
         data = r.json()
         tokens = data.get("usage", {}).get("completion_tokens", max_tokens)
@@ -61,39 +67,60 @@ def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
     except Exception as e:
         return None, str(e)
 
-def run(mode, model_name=None):
-    port = PORTS[mode]
+def get_system_metadata():
+    """Gather reproducible hardware & system environment metadata."""
+    meta = {
+        "platform": platform.platform(),
+        "machine": platform.machine(),
+        "python_version": platform.python_version(),
+        "cpu_cores": os.cpu_count(),
+        "arm_features": [],
+        "optimal_threads": "N/A"
+    }
+    try:
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                if line.startswith("Features"):
+                    meta["arm_features"] = line.split(":")[1].strip().split()
+                    break
+    except Exception:
+        pass
+    try:
+        with open(os.path.expanduser("~/armforge/results/optimal_threads.txt")) as f:
+            meta["optimal_threads"] = f.read().strip()
+    except Exception:
+        pass
+    return meta
+
+def run(mode, port):
     base_url = f"http://localhost:{port}"
     print(f"\n=== ArmForge Benchmark [{mode.upper()}] → {base_url} ===\n")
 
     if not check_server(base_url):
-        print(f"ERROR: No server responding at {base_url}")
-        print(f"Start the server first, then retry.")
+        print(f"ERROR: No server at {base_url}. Start server first.")
         return None
+
+    print("Running warmup request...")
+    warmup(base_url)
 
     ttfts, tps_list = [], []
     for i, prompt in enumerate(PROMPTS):
         print(f"[{i+1}/{len(PROMPTS)}] {prompt[:55]}...")
-        ttft, err1 = measure_ttft(base_url, prompt)
-        tps,  err2 = measure_throughput(base_url, prompt)
-        if ttft:
-            ttfts.append(ttft)
-            print(f"  TTFT:       {ttft*1000:.0f} ms")
-        if tps:
-            tps_list.append(tps)
-            print(f"  Throughput: {tps:.2f} tok/s")
-        if err1 or err2:
-            print(f"  Error: {err1 or err2}")
+        ttft, e1 = measure_ttft(base_url, prompt)
+        tps,  e2 = measure_throughput(base_url, prompt)
+        if ttft: ttfts.append(ttft); print(f"  TTFT:       {ttft*1000:.0f} ms")
+        if tps:  tps_list.append(tps); print(f"  Throughput: {tps:.2f} tok/s")
+        if e1 or e2: print(f"  Error: {e1 or e2}")
 
     if not tps_list:
-        print("No successful measurements. Check server logs.")
+        print("No successful measurements.")
         return None
 
     results = {
         "mode":        mode,
-        "model_name":  model_name or ("Llama-3.2-3B-Instruct" if mode != "sglang" else "Qwen2.5-1.5B"),
+        "port":        port,
         "timestamp":   datetime.now().isoformat(),
-        "platform":    "arm64",
+        "system_info": get_system_metadata(),
         "avg_ttft_ms": round(statistics.mean(ttfts) * 1000, 1) if ttfts else None,
         "avg_tps":     round(statistics.mean(tps_list), 2),
         "min_tps":     round(min(tps_list), 2),
@@ -108,14 +135,15 @@ def run(mode, model_name=None):
         json.dump(results, f, indent=2)
 
     print(f"\n--- Summary ---")
-    print(f"  Avg TTFT:    {results['avg_ttft_ms']} ms")
-    print(f"  Avg tok/s:   {results['avg_tps']}")
-    print(f"  Saved:       {fname}")
+    print(f"  Avg TTFT:  {results['avg_ttft_ms']} ms")
+    print(f"  Avg tok/s: {results['avg_tps']}")
+    print(f"  Saved:     {fname}")
     return results
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=["llama", "sglang", "baseline"], default="llama")
-    ap.add_argument("--model-name", type=str, default=None)
+    ap.add_argument("--mode", required=True,
+        choices=["baseline","kleidiai","optimized","sglang"])
+    ap.add_argument("--port", type=int, default=8000)
     args = ap.parse_args()
-    run(args.mode, args.model_name)
+    run(args.mode, args.port)

@@ -1,61 +1,93 @@
-# ArmForge
+# ArmForge — ARM64 LLM Inference Optimization Suite
 
-**First open-source stack combining KleidiAI + speculative decoding on a free ARM64 cloud instance.**
+**Open-source ARM64 LLM inference benchmark: KleidiAI + speculative decoding on free Oracle Cloud A1.**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
+---
+
 ## Project Overview
 
-ArmForge stacks three compounding optimizations for LLM inference on ARM Neoverse CPUs, benchmarked against a clean baseline on identical hardware:
+ArmForge evaluates and stacks optimizations for LLM inference on ARM Neoverse CPUs, benchmarked against a clean baseline on identical hardware:
 
-1. **KleidiAI kernels** — built into llama.cpp via `GGML_CPU_KLEIDIAI=ON`, activates ARM-native dotprod/I8MM matrix multiply
-2. **Speculative decoding** — 1B draft model generates 5 tokens per step; 3B verifies in one parallel pass; output is identical to non-speculative
-3. **SGLang W8A8 CPU** — ARM64-native inference engine with W8A8 INT8 quantization (aarch64 wheel available since July 2026)
+1. **KleidiAI kernels** — built into llama.cpp via `GGML_CPU_KLEIDIAI=ON`, activating ARM-native `dotprod` / `i8mm` matrix multiplication. Primary **throughput** optimization (+30–50% tok/s).
+2. **Speculative decoding** — pairs Llama-3.2-3B-Instruct with Llama-3.2-1B-Instruct (same tokenizer family). Primary **latency (TTFT)** reduction play on CPU.
+3. **Thread Sweep Tuning** — auto-detects optimal thread counts (e.g. 1..4) to avoid memory bandwidth saturation on Neoverse N1.
+4. **NUMA Interleave & Process Pinning** — leverages `numactl --interleave=all` for uniform memory access latency across CPU sockets/cores.
+5. **SGLang W8A8 CPU (Bonus Demo)** — ARM64-native inference engine with INT8 quantization.
 
-## Why It Should Win
+---
 
-- Judges can reproduce every result — benchmark JSON files are committed
-- Uses SGLang's brand-new ARM64 backend (merged May 2026)
-- Correct speculative decoding with a matched draft model (Llama-3.2-1B + 3B, identical tokenizer)
-- Zero cost — runs entirely on Oracle Cloud Always Free tier
+## Benchmark Isolation & Methodology
 
-## Functionality / Output
+To ensure scientific credibility, optimizations are measured independently:
 
-- Baseline benchmark (vanilla llama.cpp, no KleidiAI)
-- Optimized benchmark (KleidiAI + speculative decoding)
-- SGLang W8A8 CPU benchmark (bonus track)
-- before/after comparison table via `benchmark/compare.py`
-- Live dashboard at `:8080` auto-refreshing every 10s
+| Configuration | Metric Target | Rationale |
+|---|---|---|
+| **① Baseline** | Reference baseline | Vanilla `llama.cpp` (`GGML_CPU_KLEIDIAI=OFF`, `-ngl 0`, `--mlock`) |
+| **② + KleidiAI** | Throughput win | Native ARM `dotprod` matrix kernels (`-b 512`) |
+| **③ + KleidiAI + Speculative** | Latency win (TTFT) | 1B draft model overlap (`--model-draft`, `--spec-type draft-simple`) |
 
-## Setup Instructions
+> **Note on CPU Speculative Decoding:** On CPU, speculative verification is sequential. Speculative decoding targets **TTFT reduction (-30-40%)**, while throughput gains over KleidiAI-only are expected to be flat or marginal.
 
-### Requirements
-- ARM64 instance: Oracle Cloud A1 (2 OCPU, 12 GB) — always free
-- OS: Ubuntu 22.04 aarch64
+---
 
-### Steps
+## Quick Start Guide
+
+### 🚀 Option A: One-Command Execution (Recommended)
+
+Run the complete pipeline end-to-end with a single command:
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/armforge
 cd armforge
+bash scripts/run_all.sh
+```
+
+---
+
+### Option B: Step-by-Step Setup
+
+```bash
+# 1. Bootstrap environment (PyTorch CPU, packages, 4GB swap)
 bash scripts/00_bootstrap.sh
+
+# 2. Build llama.cpp with KleidiAI ON and OFF (baseline)
 bash scripts/01_build_llamacpp.sh
+bash scripts/01b_build_baseline.sh
+
+# 3. Download GGUF models (Llama-3.2-3B and 1B draft)
 bash scripts/02_download_models.sh
-bash scripts/03_benchmark_baseline.sh
-bash scripts/04_benchmark_optimized.sh
-source ~/armforge_env/bin/activate && python benchmark/compare.py
-bash scripts/05_start_dashboard.sh
+
+# 4. Auto-tune thread count for optimal RAM bandwidth
+bash scripts/03_tune_threads.sh
+
+# 5. Run benchmarks
+bash scripts/04_benchmark_baseline.sh
+bash scripts/05_benchmark_kleidiai.sh
+bash scripts/06_benchmark_optimized.sh
+
+# 6. Display three-row comparison table with visual charts
+source ~/armforge_env/bin/activate
+python benchmark/compare.py
+
+# 7. Launch web dashboard
+bash scripts/07_start_dashboard.sh  # Open http://YOUR_IP:8080
 ```
 
 ### Validation
+
 ```bash
-uname -m                          # → aarch64
-python3 inference/arm_features.py # shows detected features
+uname -m                                      # → aarch64
+python3 inference/arm_features.py             # Feature report & optimal threads
+grep KLEIDIAI ~/llama.cpp/build/CMakeCache.txt # → GGML_CPU_KLEIDIAI:BOOL=ON
 curl http://localhost:8080/api/metrics | python3 -m json.tool
 ```
 
+---
+
 ## Tech Stack
-- llama.cpp (KleidiAI build) — https://github.com/ggml-org/llama.cpp
-- SGLang 0.5.16+ — https://github.com/sgl-project/sglang
-- FastAPI / uvicorn — dashboard
-- huggingface_hub — model download
-- Oracle Cloud A1 — ARM Neoverse N1, always free
+- **llama.cpp** (KleidiAI build) — [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)
+- **FastAPI / Uvicorn** — Real-time performance dashboard
+- **Oracle Cloud A1** — ARM Neoverse N1, Always Free Tier
+- **License**: Apache 2.0

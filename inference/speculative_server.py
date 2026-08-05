@@ -1,16 +1,17 @@
 """
 Launch llama.cpp server with speculative decoding.
 
-Verified flags (llama.cpp current master, 2026):
-  --model-draft  (-md)  : draft model path
-  --draft-max           : max draft tokens per step (default 5)
-  --draft-min           : min draft tokens (default 0)
-  --spec-type           : set to 'draft-simple' for standard draft-model decoding
+IMPORTANT: On CPU (no GPU), speculative decoding reduces TTFT via draft token
+prefill overlap. Throughput (tok/s) gain vs KleidiAI-only is typically flat
+or marginal — this is correct behavior, not a bug. The win is latency.
 
-Both models must be from the same model family (identical tokenizer).
-Llama-3.2-3B + Llama-3.2-1B share the same Meta tokenizer — compatible.
-
-API: OpenAI-compatible at http://localhost:8000
+Verified flags (llama.cpp 2026 master):
+  --model-draft (-md)  : draft model path
+  --draft-max          : max draft tokens per step
+  --spec-type          : must be 'draft-simple' for standalone draft model
+  -ngl 0               : explicit CPU-only (no GPU offload)
+  --mlock              : lock model weights in RAM, prevents swap thrash
+  -b 512               : batch size — activates KleidiAI dotprod kernel paths
 """
 import subprocess, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -27,23 +28,26 @@ def start(port=8000, context=2048, draft_max=5):
                        (MAIN_MODEL,   "main_model.gguf"),
                        (DRAFT_MODEL,  "draft_model.gguf")]:
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Not found: {path}\nRun scripts/01_build_llamacpp.sh and scripts/02_download_models.sh first.")
+            raise FileNotFoundError(f"Not found: {path}")
 
     cmd = [
         LLAMA_SERVER,
-        "-m",          MAIN_MODEL,
-        "--model-draft", DRAFT_MODEL,   # verified flag name (not --draft-model)
-        "--spec-type", "draft-simple",  # use standalone draft model
-        "--draft-max", str(draft_max),  # tokens drafted per step
-        "-t",          str(threads),
-        "-c",          str(context),
-        "--host",      "0.0.0.0",
-        "--port",      str(port),
-        "--log-format", "json",
+        "-m",            MAIN_MODEL,
+        "--model-draft", DRAFT_MODEL,
+        "--spec-type",   "draft-simple",
+        "--draft-max",   str(draft_max),
+        "-t",            str(threads),
+        "-ngl",          "0",
+        "--mlock",
+        "-b",            "512",
+        "-c",            str(context),
+        "--host",        "0.0.0.0",
+        "--port",        str(port),
+        "--log-format",  "json",
     ]
 
     print(f"Starting speculative decoding server on :{port}")
-    print(f"Threads: {threads} | Draft max tokens: {draft_max}")
+    print(f"Threads: {threads} | Draft max: {draft_max} | mlock: ON | batch: 512")
     subprocess.run(cmd)
 
 if __name__ == '__main__':

@@ -24,8 +24,12 @@ def detect():
     return feats
 
 def optimal_threads():
-    """Leave 1 core free for OS; avoids NUMA contention on Neoverse."""
-    return max(1, os.cpu_count() - 1)
+    """Read from thread sweep result; fallback to nproc-1."""
+    try:
+        with open(os.path.expanduser('~/armforge/results/optimal_threads.txt')) as f:
+            return int(f.read().strip())
+    except Exception:
+        return max(1, os.cpu_count() - 1)
 
 def report():
     f = detect()
