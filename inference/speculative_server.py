@@ -38,7 +38,7 @@ def start(port=8000, context=2048, draft_max=5):
         "--draft-max",   str(draft_max),
         "-t",            str(threads),
         "-ngl",          "0",
-        "--load-mode",   "mlock",
+        "--load-mode",   "mlock", # --mlock
         "-b",            "512",
         "-c",            str(context),
         "--host",        "0.0.0.0",

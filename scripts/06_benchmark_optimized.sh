@@ -22,7 +22,7 @@ pkill -f llama-server 2>/dev/null || true; sleep 2
   --draft-max 5 \
   -t $T \
   -ngl 0 \
-  --load-mode mlock \
+  --load-mode mlock \ # --mlock
   -b 512 \
   -c 2048 \
   --host 0.0.0.0 --port 8000 \
