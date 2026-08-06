@@ -217,7 +217,7 @@ async def export_markdown():
 @app.post("/api/generate")
 async def generate_stream(req: GenerateRequest):
     """Proxy streaming completion request to local llama-server."""
-    target_url = f"http://localhost:{req.port}/v1/completions"
+    primary_url = f"http://localhost:{req.port}/v1/completions"
 
     def stream_generator():
         payload = {
@@ -229,8 +229,29 @@ async def generate_stream(req: GenerateRequest):
         first_token_time = None
         token_count = 0
 
+        # Attempt primary URL, fallback to port 8000 if primary is unreachable
+        urls_to_try = [primary_url]
+        if req.port != 8000:
+            urls_to_try.append("http://localhost:8000/v1/completions")
+
+        r = None
+        last_err = None
+        for url in urls_to_try:
+            try:
+                resp = requests.post(url, json=payload, stream=True, timeout=120)
+                if resp.status_code == 200:
+                    r = resp
+                    break
+                else:
+                    last_err = f"HTTP {resp.status_code} from {url}"
+            except Exception as ex:
+                last_err = str(ex)
+
+        if r is None:
+            yield f"data: [ERROR] Could not connect to model server (tried port {req.port} and fallback port 8000). Error: {last_err}\n\n"
+            return
+
         try:
-            r = requests.post(target_url, json=payload, stream=True, timeout=120)
             for chunk in r.iter_lines():
                 if chunk:
                     line = chunk.decode('utf-8')
