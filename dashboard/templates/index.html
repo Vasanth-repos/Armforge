@@ -34,7 +34,7 @@
           }
         }
       }
-    }
+    };
   </script>
 
   <!-- Lucide Icons & Chart.js -->
@@ -67,11 +67,6 @@
     }
     .gradient-text {
       background: linear-gradient(135deg, #60A5FA 0%, #38BDF8 50%, #34D399 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .gradient-orange-text {
-      background: linear-gradient(135deg, #F97316 0%, #FBBF24 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -114,7 +109,7 @@
           <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i>
           {{ hardware_name }}
         </div>
-        <button onclick="window.scrollTo({top: document.getElementById('playground').offsetTop - 80, behavior: 'smooth'})" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all">
+        <button onclick="document.getElementById('playground').scrollIntoView({behavior: 'smooth'})" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all">
           Launch Playground
         </button>
       </div>
@@ -137,7 +132,7 @@
             ArmForge <span class="gradient-text">Inference Engine</span>
           </h2>
           <p class="text-gray-400 text-sm mt-1 max-w-2xl">
-            Stacking Arm KleidiAI quantized matrix kernels & speculative decoding on ARM cloud & edge hardware.
+            Stacking Arm KleidiAI quantized matrix kernels &amp; speculative decoding on ARM cloud &amp; edge hardware.
           </p>
         </div>
         <div class="text-xs font-mono text-gray-500">
@@ -165,7 +160,7 @@
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 85%"></div>
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full w-[85%]"></div>
           </div>
         </div>
 
@@ -186,7 +181,7 @@
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full" style="width: 75%"></div>
+            <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full w-[75%]"></div>
           </div>
         </div>
 
@@ -206,7 +201,7 @@
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-orange-500 to-amber-400 h-full rounded-full" style="width: 95%"></div>
+            <div class="bg-gradient-to-r from-orange-500 to-amber-400 h-full rounded-full w-[95%]"></div>
           </div>
         </div>
 
@@ -225,7 +220,7 @@
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full" style="width: 100%"></div>
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full w-[100%]"></div>
           </div>
         </div>
 
@@ -240,7 +235,7 @@
         <div class="flex items-center justify-between border-b border-gray-800 pb-4">
           <div class="flex items-center gap-2">
             <i data-lucide="info" class="w-5 h-5 text-cyan-400"></i>
-            <h3 class="text-lg font-bold text-white">System Hardware & Feature Detection</h3>
+            <h3 class="text-lg font-bold text-white">System Hardware &amp; Feature Detection</h3>
           </div>
           <span class="px-2.5 py-1 rounded-md bg-gray-800 text-xs font-mono text-gray-300">ARM64 Linux / Windows</span>
         </div>
@@ -299,7 +294,7 @@
             <span class="text-cyan-400 font-bold">{{ cpu_pct }}%</span>
           </div>
           <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden p-0.5">
-            <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-500" style="width: {{ cpu_pct }}%"></div>
+            <div id="cpuBar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-500"></div>
           </div>
         </div>
 
@@ -310,7 +305,7 @@
             <span class="text-purple-400 font-bold">{{ mem_pct }}%</span>
           </div>
           <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden p-0.5">
-            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-500" style="width: {{ mem_pct }}%"></div>
+            <div id="memBar" class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-500"></div>
           </div>
         </div>
 
@@ -335,8 +330,7 @@
       <!-- 7 Stage Interactive Pipeline -->
       <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         
-        <!-- Stage 1 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-cyan-500/30 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-cyan-500/30 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
             <i data-lucide="search" class="w-4 h-4"></i>
           </div>
@@ -344,8 +338,7 @@
           <span class="text-[10px] text-gray-400 font-mono">Probing CPU</span>
         </div>
 
-        <!-- Stage 2 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-cyan-500/30 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-cyan-500/30 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
             <i data-lucide="download" class="w-4 h-4"></i>
           </div>
@@ -353,8 +346,7 @@
           <span class="text-[10px] text-gray-400 font-mono">Q4_K_M GGUF</span>
         </div>
 
-        <!-- Stage 3 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-700 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-700 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-gray-800 text-gray-400 flex items-center justify-center">
             <i data-lucide="play" class="w-4 h-4"></i>
           </div>
@@ -362,8 +354,7 @@
           <span class="text-[10px] text-gray-400 font-mono">Vanilla llama.cpp</span>
         </div>
 
-        <!-- Stage 4 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-emerald-500/40 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-emerald-500/40 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
             <i data-lucide="zap" class="w-4 h-4"></i>
           </div>
@@ -371,8 +362,7 @@
           <span class="text-[10px] text-emerald-400 font-mono">dotprod Vector</span>
         </div>
 
-        <!-- Stage 5 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-orange-500/40 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-orange-500/40 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
             <i data-lucide="layers" class="w-4 h-4"></i>
           </div>
@@ -380,8 +370,7 @@
           <span class="text-[10px] text-orange-400 font-mono">1B Draft Overlap</span>
         </div>
 
-        <!-- Stage 6 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-purple-500/40 flex flex-col items-center text-center space-y-2 relative">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-purple-500/40 flex flex-col items-center text-center space-y-2">
           <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
             <i data-lucide="cpu" class="w-4 h-4"></i>
           </div>
@@ -389,8 +378,7 @@
           <span class="text-[10px] text-purple-400 font-mono">36+ tok/s</span>
         </div>
 
-        <!-- Stage 7 -->
-        <div class="p-3 rounded-xl bg-gray-900/80 border border-emerald-500/50 flex flex-col items-center text-center space-y-2 relative glow-emerald">
+        <div class="p-3 rounded-xl bg-gray-900/80 border border-emerald-500/50 flex flex-col items-center text-center space-y-2 glow-emerald">
           <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
             <i data-lucide="file-text" class="w-4 h-4"></i>
           </div>
@@ -426,9 +414,9 @@
           <div>
             <label class="block text-xs font-medium text-gray-300 mb-1">Sample Prompt Presets</label>
             <div class="flex flex-wrap gap-1.5">
-              <button onclick="setPrompt('Explain how ARM Neoverse processors accelerate AI inference in detail.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">ARM Neoverse</button>
-              <button onclick="setPrompt('Write a Python function to benchmark matrix multiplication.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Python Code</button>
-              <button onclick="setPrompt('Summarize the benefits of speculative decoding for LLMs.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Speculative</button>
+              <button type="button" onclick="setPrompt('Explain how ARM Neoverse processors accelerate AI inference in detail.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">ARM Neoverse</button>
+              <button type="button" onclick="setPrompt('Write a Python function to benchmark matrix multiplication.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Python Code</button>
+              <button type="button" onclick="setPrompt('Summarize the benefits of speculative decoding for LLMs.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Speculative</button>
             </div>
           </div>
 
@@ -437,7 +425,7 @@
             <textarea id="pPrompt" rows="5" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500 placeholder-gray-500" placeholder="Type prompt here...">Explain how ARM Neoverse processors accelerate AI inference in detail.</textarea>
           </div>
 
-          <button id="pBtn" onclick="runInference()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-400 hover:from-blue-500 hover:to-emerald-300 text-white font-bold text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all">
+          <button id="pBtn" type="button" onclick="runInference()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-400 hover:from-blue-500 hover:to-emerald-300 text-white font-bold text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all">
             <i data-lucide="play" class="w-4 h-4"></i>
             Generate Stream
           </button>
@@ -446,7 +434,6 @@
         <!-- RIGHT PANEL: Streaming Response & Live KPI Meters -->
         <div class="lg:col-span-7 space-y-4 flex flex-col justify-between">
           
-          <!-- Generation Performance Meters -->
           <div class="grid grid-cols-4 gap-2">
             <div class="p-2.5 rounded-xl bg-gray-900/80 border border-gray-800 text-center">
               <div class="text-[10px] text-gray-400">TTFT</div>
@@ -466,8 +453,7 @@
             </div>
           </div>
 
-          <!-- Streaming Text Window -->
-          <div class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-200 overflow-y-auto max-h-[260px] min-h-[200px] leading-relaxed relative">
+          <div class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-200 overflow-y-auto max-h-[260px] min-h-[200px] leading-relaxed">
             <div id="pOutput" class="whitespace-pre-wrap">Click "Generate Stream" to start inference...</div>
           </div>
 
@@ -479,7 +465,6 @@
     <!-- ================= 5. LIVE PERFORMANCE VISUALIZATION (CHARTS) ================= -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Throughput Chart -->
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-gray-800 pb-3">
           <div class="flex items-center gap-2">
@@ -493,7 +478,6 @@
         </div>
       </div>
 
-      <!-- Latency TTFT Chart -->
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-gray-800 pb-3">
           <div class="flex items-center gap-2">
@@ -519,7 +503,6 @@
 
       <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
         
-        <!-- BASELINE CARD -->
         <div class="md:col-span-5 p-6 rounded-2xl bg-gray-900/90 border border-gray-800 space-y-4">
           <div class="flex justify-between items-center">
             <span class="text-sm font-bold text-gray-400">BASELINE</span>
@@ -537,14 +520,12 @@
           </div>
         </div>
 
-        <!-- VS ARROW BADGE -->
         <div class="md:col-span-1 flex flex-col items-center justify-center text-center py-2">
           <div class="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg shadow-lg shadow-cyan-500/20">
             VS
           </div>
         </div>
 
-        <!-- OPTIMIZED CARD -->
         <div class="md:col-span-5 p-6 rounded-2xl bg-gradient-to-br from-gray-900 via-gray-900 to-cyan-950/40 border border-cyan-500/50 space-y-4 glow-cyan">
           <div class="flex justify-between items-center">
             <span class="text-sm font-bold text-cyan-400">ARMFORGE OPTIMIZED</span>
@@ -576,13 +557,13 @@
       <div class="flex items-center justify-between border-b border-gray-800 pb-4">
         <div class="flex items-center gap-2">
           <i data-lucide="database" class="w-5 h-5 text-purple-400"></i>
-          <h3 class="text-lg font-bold text-white">Benchmark Analytics & Historic Log</h3>
+          <h3 class="text-lg font-bold text-white">Benchmark Analytics &amp; Historic Log</h3>
         </div>
         <div class="flex gap-2">
-          <button onclick="exportData('json')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 flex items-center gap-1 transition-all">
+          <button type="button" onclick="exportData('json')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 flex items-center gap-1 transition-all">
             <i data-lucide="download" class="w-3.5 h-3.5"></i> JSON
           </button>
-          <button onclick="exportData('markdown')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 flex items-center gap-1 transition-all">
+          <button type="button" onclick="exportData('markdown')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 flex items-center gap-1 transition-all">
             <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Markdown
           </button>
         </div>
@@ -619,7 +600,6 @@
     <!-- ================= 8. RECOMMENDATION ENGINE & MODEL INFO ================= -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Recommendation Engine -->
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-gray-800 pb-3">
           <div class="flex items-center gap-2">
@@ -641,12 +621,11 @@
         </div>
       </div>
 
-      <!-- Model Specs -->
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-gray-800 pb-3">
           <div class="flex items-center gap-2">
             <i data-lucide="box" class="w-5 h-5 text-blue-400"></i>
-            <h3 class="text-base font-bold text-white">Model Specs & Configuration</h3>
+            <h3 class="text-base font-bold text-white">Model Specs &amp; Configuration</h3>
           </div>
           <span class="text-xs text-gray-400 font-mono">GGUF Format</span>
         </div>
@@ -695,6 +674,12 @@
     // Initialize Lucide Icons
     lucide.createIcons();
 
+    // Dynamically set progress meter widths safely
+    const cpuVal = Number("{{ cpu_pct }}") || 25;
+    const memVal = Number("{{ mem_pct }}") || 40;
+    document.getElementById("cpuBar").style.width = cpuVal + "%";
+    document.getElementById("memBar").style.width = memVal + "%";
+
     function setPrompt(txt) {
       document.getElementById("pPrompt").value = txt;
     }
@@ -708,6 +693,11 @@
     }
 
     // Chart.js Performance Charts Initialization
+    const baselineTps = Number("{{ baseline_tps }}") || 20.08;
+    const optimizedTps = Number("{{ optimized_tps }}") || 36.61;
+    const baselineTtft = Number("{{ baseline_ttft }}") || 750.0;
+    const optimizedTtft = Number("{{ optimized_ttft }}") || 420.0;
+
     const tpsCtx = document.getElementById('tpsChart').getContext('2d');
     new Chart(tpsCtx, {
       type: 'bar',
@@ -715,7 +705,7 @@
         labels: ['Baseline (vanilla)', '+ KleidiAI Kernels', '+ KleidiAI + Speculative'],
         datasets: [{
           label: 'Throughput (tokens/sec)',
-          data: [{{ baseline_tps }}, {{ optimized_tps }}, {{ optimized_tps }}],
+          data: [baselineTps, optimizedTps, optimizedTps],
           backgroundColor: ['rgba(107, 114, 128, 0.5)', 'rgba(16, 185, 129, 0.8)', 'rgba(6, 182, 212, 0.8)'],
           borderColor: ['#9CA3AF', '#10B981', '#06B6D4'],
           borderWidth: 1,
@@ -740,7 +730,7 @@
         labels: ['Baseline (vanilla)', '+ KleidiAI Kernels', '+ KleidiAI + Speculative'],
         datasets: [{
           label: 'TTFT Latency (ms)',
-          data: [{{ baseline_ttft }}, 620.0, {{ optimized_ttft }}],
+          data: [baselineTtft, 620.0, optimizedTtft],
           backgroundColor: ['rgba(239, 68, 68, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(6, 182, 212, 0.8)'],
           borderColor: ['#EF4444', '#3B82F6', '#06B6D4'],
           borderWidth: 1,
