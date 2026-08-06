@@ -141,7 +141,7 @@ async function runInference() {
           document.getElementById("mTps").textContent = stats.tps + " tok/s";
           document.getElementById("mTokens").textContent = stats.tokens;
           document.getElementById("mElapsed").textContent = stats.elapsed_s + "s";
-        } else if (line.startswith("data: ") && !line.includes("[DONE]")) {
+        } else if (line.startsWith("data: ") && !line.includes("[DONE]")) {
           try {
             const data = JSON.parse(line.replace("data: ", ""));
             if (data.choices && data.choices[0].text) {
