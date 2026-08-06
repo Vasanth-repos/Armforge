@@ -79,6 +79,16 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
 
+  <!-- Invisible App Configuration Dataset Element -->
+  <div id="appConfig" 
+       data-cpu="{{ cpu_pct }}" 
+       data-mem="{{ mem_pct }}" 
+       data-baseline-tps="{{ baseline_tps }}" 
+       data-optimized-tps="{{ optimized_tps }}" 
+       data-baseline-ttft="{{ baseline_ttft }}" 
+       data-optimized-ttft="{{ optimized_ttft }}" 
+       class="hidden"></div>
+
   <!-- ================= TOP NAVIGATION BAR ================= -->
   <header class="border-b border-gray-800 bg-[#0B0F14]/90 sticky top-0 z-50 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -109,7 +119,7 @@
           <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i>
           {{ hardware_name }}
         </div>
-        <button onclick="document.getElementById('playground').scrollIntoView({behavior: 'smooth'})" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all">
+        <button type="button" onclick="document.getElementById('playground').scrollIntoView({behavior: 'smooth'})" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all">
           Launch Playground
         </button>
       </div>
@@ -674,9 +684,15 @@
     // Initialize Lucide Icons
     lucide.createIcons();
 
-    // Dynamically set progress meter widths safely
-    const cpuVal = Number("{{ cpu_pct }}") || 25;
-    const memVal = Number("{{ mem_pct }}") || 40;
+    // Safely retrieve configuration data attributes
+    const configEl = document.getElementById("appConfig");
+    const cpuVal = parseFloat(configEl.getAttribute("data-cpu")) || 25;
+    const memVal = parseFloat(configEl.getAttribute("data-mem")) || 40;
+    const baselineTps = parseFloat(configEl.getAttribute("data-baseline-tps")) || 20.08;
+    const optimizedTps = parseFloat(configEl.getAttribute("data-optimized-tps")) || 36.61;
+    const baselineTtft = parseFloat(configEl.getAttribute("data-baseline-ttft")) || 750.0;
+    const optimizedTtft = parseFloat(configEl.getAttribute("data-optimized-ttft")) || 420.0;
+
     document.getElementById("cpuBar").style.width = cpuVal + "%";
     document.getElementById("memBar").style.width = memVal + "%";
 
@@ -693,11 +709,6 @@
     }
 
     // Chart.js Performance Charts Initialization
-    const baselineTps = Number("{{ baseline_tps }}") || 20.08;
-    const optimizedTps = Number("{{ optimized_tps }}") || 36.61;
-    const baselineTtft = Number("{{ baseline_ttft }}") || 750.0;
-    const optimizedTtft = Number("{{ optimized_ttft }}") || 420.0;
-
     const tpsCtx = document.getElementById('tpsChart').getContext('2d');
     new Chart(tpsCtx, {
       type: 'bar',
