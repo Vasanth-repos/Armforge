@@ -2,7 +2,7 @@
 FastAPI dashboard — live metrics, interactive prompt playground, & benchmark results.
 Run: uvicorn dashboard.app:app --host 0.0.0.0 --port 8080
 """
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -41,6 +41,11 @@ def get_optimal_threads():
         with open('results/optimal_threads.txt') as f: return f.read().strip()
     except Exception:
         return "N/A"
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Clean handler for browser favicon requests."""
+    return Response(status_code=204)
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
