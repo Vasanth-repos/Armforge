@@ -10,7 +10,7 @@ Verified flags (llama.cpp 2026 master):
   --draft-max          : max draft tokens per step
   --spec-type          : must be 'draft-simple' for standalone draft model
   -ngl 0               : explicit CPU-only (no GPU offload)
-  --mlock              : lock model weights in RAM, prevents swap thrash
+  --load-mode mlock    : lock model weights in RAM, prevents swap thrash
   -b 512               : batch size — activates KleidiAI dotprod kernel paths
 """
 import subprocess, sys, os
@@ -38,7 +38,7 @@ def start(port=8000, context=2048, draft_max=5):
         "--draft-max",   str(draft_max),
         "-t",            str(threads),
         "-ngl",          "0",
-        "--mlock",
+        "--load-mode",   "mlock",
         "-b",            "512",
         "-c",            str(context),
         "--host",        "0.0.0.0",
@@ -47,7 +47,7 @@ def start(port=8000, context=2048, draft_max=5):
     ]
 
     print(f"Starting speculative decoding server on :{port}")
-    print(f"Threads: {threads} | Draft max: {draft_max} | mlock: ON | batch: 512")
+    print(f"Threads: {threads} | Draft max: {draft_max} | load-mode: mlock | batch: 512")
     subprocess.run(cmd)
 
 if __name__ == '__main__':
