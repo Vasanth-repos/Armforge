@@ -14,7 +14,7 @@ templates = Jinja2Templates(directory="dashboard/templates")
 
 class GenerateRequest(BaseModel):
     prompt: str
-    max_tokens: int = 128
+    max_tokens: int = 256
     port: int = 8000
 
 def get_arm_features():

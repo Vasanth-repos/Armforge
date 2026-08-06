@@ -423,6 +423,19 @@
           </div>
 
           <div>
+            <div class="flex justify-between text-xs font-medium text-gray-300 mb-1">
+              <label for="pMaxTokens">Max Tokens</label>
+              <span id="pMaxTokensVal" class="text-cyan-400 font-mono">256 tokens</span>
+            </div>
+            <select id="pMaxTokens" onchange="document.getElementById('pMaxTokensVal').textContent = this.value + ' tokens'" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono">
+              <option value="128">128 tokens (Fast Demo)</option>
+              <option value="256" selected>256 tokens (Standard Response)</option>
+              <option value="512">512 tokens (Detailed Output)</option>
+              <option value="1024">1024 tokens (Long Form)</option>
+            </select>
+          </div>
+
+          <div>
             <label class="block text-xs font-medium text-gray-300 mb-1">Sample Prompt Presets</label>
             <div class="flex flex-wrap gap-1.5">
               <button type="button" onclick="setPrompt('Explain how ARM Neoverse processors accelerate AI inference in detail.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">ARM Neoverse</button>
@@ -764,6 +777,8 @@
     async function runInference() {
       const prompt = document.getElementById("pPrompt").value;
       const port = document.getElementById("pPort").value;
+      const maxTokensEl = document.getElementById("pMaxTokens");
+      const maxTokens = maxTokensEl ? parseInt(maxTokensEl.value) : 256;
       const genBtn = document.getElementById("pBtn");
       const out = document.getElementById("pOutput");
 
@@ -776,7 +791,7 @@
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: prompt, max_tokens: 128, port: parseInt(port) })
+          body: JSON.stringify({ prompt: prompt, max_tokens: maxTokens, port: parseInt(port) })
         });
 
         const reader = response.body.getReader();
