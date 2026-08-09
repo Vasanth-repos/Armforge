@@ -353,6 +353,17 @@ async def dashboard(request: Request):
         "timestamp":            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     })
 
+@app.get("/api/results")
+async def api_results():
+    """Return all benchmark results JSON dictionary."""
+    return load_results()
+
+@app.get("/api/summary")
+async def api_summary():
+    """Return raw SUMMARY.md content."""
+    summary_md, _ = get_summary_file_info()
+    return {"markdown": summary_md or "No summary report generated yet."}
+
 @app.get("/api/metrics")
 async def metrics():
     mem = psutil.virtual_memory()

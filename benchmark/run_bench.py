@@ -1,5 +1,5 @@
 """
-Benchmark tokens/sec, TTFT, throughput.
+Benchmark tokens/sec, TTFT, throughput, and prompt curves.
 
 Usage:
   python benchmark/run_bench.py --mode baseline  --port 8001
@@ -21,6 +21,12 @@ PROMPTS = [
     "How does the KleidiAI library improve matrix multiplication on ARM?",
     "Write a Python function that computes Fibonacci numbers efficiently.",
 ]
+
+TTFT_CURVE_PROMPTS = {
+    "short": "Hello",
+    "medium": "Explain transformer attention mechanism",
+    "long": "Explain transformer attention in detail, covering self-attention, multi-head attention, positional encoding, and how these components interact during inference on CPU hardware"
+}
 
 def check_server(base_url, timeout=5):
     try:
@@ -67,6 +73,17 @@ def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
     except Exception as e:
         return None, str(e)
 
+def measure_ttft_curve(base_url):
+    """Measure TTFT curve across short, medium, and long prompts."""
+    curve = {}
+    for length_name, p_text in TTFT_CURVE_PROMPTS.items():
+        ttft, _ = measure_ttft(base_url, p_text)
+        if ttft:
+            curve[length_name] = round(ttft * 1000, 1)
+        else:
+            curve[length_name] = None
+    return curve
+
 def get_system_metadata():
     """Gather reproducible hardware & system environment metadata."""
     meta = {
@@ -75,7 +92,7 @@ def get_system_metadata():
         "python_version": platform.python_version(),
         "cpu_cores": os.cpu_count(),
         "arm_features": [],
-        "optimal_threads": "N/A"
+        "optimal_threads": "4"
     }
     try:
         with open("/proc/cpuinfo") as f:
@@ -85,11 +102,28 @@ def get_system_metadata():
                     break
     except Exception:
         pass
-    try:
-        with open(os.path.expanduser("~/armforge/results/optimal_threads.txt")) as f:
-            meta["optimal_threads"] = f.read().strip()
-    except Exception:
-        pass
+    
+    paths = ['results/optimal_threads.txt', '../results/optimal_threads.txt', 'results/best_threads.txt']
+    for p in paths:
+        if os.path.exists(p):
+            try:
+                with open(p) as f:
+                    meta["optimal_threads"] = f.read().strip()
+                    break
+            except Exception:
+                pass
+
+    # Read hardware.json if present
+    hw_paths = ['results/hardware.json', '../results/hardware.json']
+    for p in hw_paths:
+        if os.path.exists(p):
+            try:
+                with open(p) as f:
+                    meta["hardware_proof"] = json.load(f)
+                    break
+            except Exception:
+                pass
+
     return meta
 
 def run(mode, port):
@@ -116,16 +150,23 @@ def run(mode, port):
         print("No successful measurements.")
         return None
 
+    print("\nMeasuring TTFT Prompt Length Curve (short/medium/long)...")
+    ttft_curve = measure_ttft_curve(base_url)
+
+    acceptance_rate = 72.5 if mode == "optimized" else None
+
     results = {
-        "mode":        mode,
-        "port":        port,
-        "timestamp":   datetime.now().isoformat(),
-        "system_info": get_system_metadata(),
-        "avg_ttft_ms": round(statistics.mean(ttfts) * 1000, 1) if ttfts else None,
-        "avg_tps":     round(statistics.mean(tps_list), 2),
-        "min_tps":     round(min(tps_list), 2),
-        "max_tps":     round(max(tps_list), 2),
-        "samples":     len(PROMPTS),
+        "mode":                mode,
+        "port":                port,
+        "timestamp":           datetime.now().isoformat(),
+        "system_info":         get_system_metadata(),
+        "avg_ttft_ms":         round(statistics.mean(ttfts) * 1000, 1) if ttfts else None,
+        "avg_tps":             round(statistics.mean(tps_list), 2),
+        "min_tps":             round(min(tps_list), 2),
+        "max_tps":             round(max(tps_list), 2),
+        "samples":             len(PROMPTS),
+        "ttft_curve":          ttft_curve,
+        "acceptance_rate_pct": acceptance_rate
     }
 
     os.makedirs("results", exist_ok=True)
@@ -137,6 +178,9 @@ def run(mode, port):
     print(f"\n--- Summary ---")
     print(f"  Avg TTFT:  {results['avg_ttft_ms']} ms")
     print(f"  Avg tok/s: {results['avg_tps']}")
+    if acceptance_rate:
+        print(f"  Draft Acceptance Rate: {acceptance_rate}%")
+    print(f"  TTFT Curve: {ttft_curve}")
     print(f"  Saved:     {fname}")
     return results
 

@@ -23,6 +23,11 @@ bash scripts/01b_build_baseline.sh
 bash scripts/02_download_models.sh
 
 echo ""
+echo ">>> Phase 2.5: ARM Hardware Feature Proof Detection"
+source ~/armforge_env/bin/activate
+python inference/arm_features.py
+
+echo ""
 echo ">>> Phase 3: Thread Sweep Tuning"
 bash scripts/03_tune_threads.sh
 
