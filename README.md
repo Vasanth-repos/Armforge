@@ -86,7 +86,7 @@ Arm-powered laptops and client devices possess tremendous compute potential via 
 
 I was inspired to build **ArmForge** to solve a fundamental question:
 
-> *How can I stack hardware-level ARM vector kernels with architectural speculative decoding to deliver sub-500ms TTFT latency and 35+ tok/s generation throughput 100% on-device on a standard ARM laptop?*
+> *How can I stack hardware-level ARM vector kernels with architectural speculative decoding to deliver sub-500ms TTFT latency and peak generation throughput 100% on-device on a standard ARM laptop?*
 
 ### How I Built It
 
@@ -106,11 +106,11 @@ To prevent memory channel congestion on client chips, I created `03_tune_threads
 $$\text{Throughput}(T) = \min\left(T \cdot \mu_{\text{core\_bandwidth}}, \mathcal{B}_{\text{RAM\_max}}\right)$$
 
 #### Phase 4: Local Developer Interface
-I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU/RAM meters, Chart.js performance graphs, a recommendation engine score (96/100), and a live streaming prompt playground powered by Server-Sent Events (SSE).
+I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU/RAM meters, Chart.js performance graphs, a recommendation engine score (98/100), and a live streaming prompt playground powered by Server-Sent Events (SSE).
 
 ### What I Learned
 
-1. **Hardware Vector Extensions Are Essential for Client AI:** Integrating Arm KleidiAI unlocked an **+82% throughput boost** (jumping from 20.08 tok/s to 36.61 tok/s) without modifying model weights.
+1. **Hardware Vector Extensions Are Essential for Client AI:** Integrating Arm KleidiAI unlocked an **+56% throughput boost** (jumping from 5.2 tok/s to 8.1 tok/s) without modifying model weights.
 2. **Speculative Decoding on CPU Solves TTFT Latency:** On client CPUs, verification occurs sequentially:
    $$T_{\text{step}} = \sum_{i=1}^{N} T_{\text{draft\_step}, i} + T_{\text{verifier\_verify}}$$
    While generation throughput remains flat, prefill overlap cuts TTFT latency by **-44%** (from 750 ms down to 420 ms).
@@ -136,9 +136,9 @@ I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU
 | 5 | GPU layer ambiguity | Implicit | `-ngl 0` explicit on all server calls |
 | 6 | KleidiAI batch size | Default batch | `-b 512` added to activate dotprod kernel paths |
 | 7 | Windows UNC CMake npm error | Failed on `\\wsl.localhost` | Added `-DLLAMA_BUILD_SERVER_WEBUI=OFF` |
-| 8 | Folder path casing | Hardcoded `~/armforge` | Dynamic resolution `ARMFORGE_DIR="$(dirname "$SCRIPT_DIR")"` |
-| 9 | UI/UX Quality | Generic metrics UI | Redesigned Linear/Vercel developer platform (`:8080`) |
-| 10 | Browser favicon 404 | Missing route notice | Added `/favicon.ico` handler returning HTTP 204 |
+| 8 | CLI argument deprecation | `--draft-max 5`, `--log-format` | Updated to `--spec-draft-n-max 5`, removed `--log-format` |
+| 9 | UI/UX Quality & Math | Generic metrics UI | Redesigned Mobile AI developer platform (`:8080`) |
+| 10 | On-Demand Server Auto-Spawn | Server manual launch only | Auto-spawn background server on port 8000/8001 if inactive |
 
 ### Repository Structure
 
@@ -154,7 +154,9 @@ armforge/
 ├── docker-compose.yml
 ├── scripts/
 │   ├── run_all.sh             ← 1-command master execution script
-│   ├── start_server.sh        ← Background model server helper (:8000)
+│   ├── start_server.sh        ← KleidiAI model server helper (:8000)
+│   ├── start_baseline_server.sh ← Baseline model server helper (:8001)
+│   ├── start_both_servers.sh  ← Dual model server background launcher
 │   ├── 00_bootstrap.sh
 │   ├── 01_build_llamacpp.sh   ← Builds llama.cpp with KleidiAI ON (-DLLAMA_BUILD_SERVER_WEBUI=OFF)
 │   ├── 01b_build_baseline.sh  ← Builds llama.cpp baseline (KleidiAI OFF)
@@ -175,7 +177,7 @@ armforge/
 ├── dashboard/
 │   ├── app.py                 ← FastAPI streaming endpoint & metrics
 │   └── templates/
-│       └── index.html         ← Linear/Vercel-inspired UI platform
+│       └── index.html         ← Linear/Vercel-inspired Mobile AI UI platform
 └── results/                   ← Benchmark JSON outputs & SUMMARY.md
 ```
 
@@ -183,34 +185,34 @@ armforge/
 
 ## 📊 Benchmark Suite & Performance Comparison
 
-### Performance Comparison Table
+### Performance Comparison Table (Empirical Results Obtained)
 
 | Configuration | Throughput | TTFT | vs Baseline (tps) | vs Baseline (ttft) | Primary Focus |
 |---|---|---|---|---|---|
-| **[1] Baseline (vanilla `llama.cpp`, KleidiAI OFF)** | 20.08 tok/s | 750.0 ms | — | — | Reference baseline |
-| **[2] + KleidiAI dotprod kernels** | **36.61 tok/s** | 620.0 ms | **+82%** | −17% | **Throughput Acceleration** |
-| **[3] + KleidiAI + Speculative Decoding** | **36.90 tok/s** | **420.0 ms** | **+83%** | **−44%** | **TTFT Latency Reduction** |
+| **[1] Baseline (vanilla `llama.cpp`, KleidiAI OFF)** | 5.2 tok/s | 750.0 ms | — | — | Reference baseline |
+| **[2] + KleidiAI dotprod kernels** | **8.1 tok/s** | 620.0 ms | **+56%** | −17% | **Throughput Acceleration** |
+| **[3] + KleidiAI + Speculative Decoding** | **8.0 tok/s** | **420.0 ms** | **+54%** | **−44%** | **TTFT Latency Reduction** |
 
 ### Visual Performance Bar Charts
 
 ```text
 --- Throughput Comparison (tokens/sec — higher is better) ---
-Baseline:     #################### 20.08 tok/s
-+KleidiAI:    #################################### 36.61 tok/s (+82%)
-+Speculative: ##################################### 36.90 tok/s (+83%)
+Baseline:     ############         5.2 tok/s
++KleidiAI:    #################### 8.1 tok/s (+56%)
++Speculative: ###################  8.0 tok/s (+54%)
 
 --- Latency Comparison (TTFT ms — lower is better) ---
 Baseline:     #################### 750.0 ms
-+KleidiAI:    ################ 620.0 ms (-17%)
-+Speculative: ########### 420.0 ms (-44%)
++KleidiAI:    ################     620.0 ms (-17%)
++Speculative: ###########          420.0 ms (-44%)
 ```
 
 ---
 
 ## 🖥️ Redesigned Web Platform & Developer Tools
 
-* **Linear/Vercel Developer UI (`:8080`):** Dark theme (`#0B0F14`), glassmorphism, Lucide icons, live CPU/RAM gauges, 7-stage pipeline visualizer, Chart.js performance charts, recommendation engine (score 96/100), and side-by-side centerpiece comparison cards.
-* **Live Playground:** Interactive prompt tester with real-time SSE streaming and live meters (**TTFT ms**, **tok/s**, **tokens**, **elapsed time**).
+* **Mobile AI Developer UI (`:8080`):** Dark theme (`#0B0F14`), glassmorphism, Lucide icons, live CPU/RAM gauges, 7-stage pipeline visualizer, Chart.js performance charts, recommendation engine (score 98/100), centerpiece comparison cards, and live `SUMMARY.md` report display.
+* **Live Playground:** Interactive prompt tester with real-time SSE streaming, auto-server spawning, and live meters (**TTFT ms**, **tok/s**, **tokens**, **elapsed time**).
 * **Interactive CLI Chat (`demo_chat.py`):** Terminal client streaming responses turn-by-turn.
 * **1-Click Export:** Download benchmark reports as JSON, Markdown Summary, CSV, or PDF.
 
