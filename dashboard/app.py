@@ -209,8 +209,21 @@ def ensure_server_running(port: int):
             pass
     return False
 
+from fastapi.staticfiles import StaticFiles
+
+static_dir = Path("dashboard/static")
+if not static_dir.exists():
+    static_dir = Path("armforge/dashboard/static")
+
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
+    paths = ["dashboard/static/favicon.png", "armforge/dashboard/static/favicon.png"]
+    for p in paths:
+        if os.path.exists(p):
+            return FileResponse(p, media_type="image/png")
     return Response(status_code=204)
 
 @app.get("/", response_class=HTMLResponse)
