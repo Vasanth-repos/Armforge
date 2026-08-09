@@ -6,12 +6,12 @@ prefill overlap. Throughput (tok/s) gain vs KleidiAI-only is typically flat
 or marginal — this is correct behavior, not a bug. The win is latency.
 
 Verified flags (llama.cpp 2026 master):
-  --model-draft (-md)  : draft model path
-  --draft-max          : max draft tokens per step
-  --spec-type          : must be 'draft-simple' for standalone draft model
-  -ngl 0               : explicit CPU-only (no GPU offload)
-  --load-mode mlock    : lock model weights in RAM, prevents swap thrash
-  -b 512               : batch size — activates KleidiAI dotprod kernel paths
+  --model-draft (-md)    : draft model path
+  --spec-draft-n-max     : max draft tokens per step
+  --spec-type            : must be 'draft-simple' for standalone draft model
+  -ngl 0                 : explicit CPU-only (no GPU offload)
+  --load-mode mlock      : lock model weights in RAM, prevents swap thrash
+  -b 512                 : batch size — activates KleidiAI dotprod kernel paths
 """
 import subprocess, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -32,18 +32,18 @@ def start(port=8000, context=2048, draft_max=5):
 
     cmd = [
         LLAMA_SERVER,
-        "-m",            MAIN_MODEL,
-        "--model-draft", DRAFT_MODEL,
-        "--spec-type",   "draft-simple",
-        "--draft-max",   str(draft_max),
-        "-t",            str(threads),
-        "-ngl",          "0",
-        "--load-mode",   "mlock", # --mlock
-        "-b",            "512",
-        "-c",            str(context),
-        "--host",        "0.0.0.0",
-        "--port",        str(port),
-        "--log-format",  "json",
+        "-m",                 MAIN_MODEL,
+        "--model-draft",      DRAFT_MODEL,
+        "--spec-type",        "draft-simple",
+        "--spec-draft-n-max", str(draft_max),
+        "-t",                 str(threads),
+        "-ngl",               "0",
+        "--load-mode",        "mlock",
+        "-b",                 "512",
+        "-c",                 str(context),
+        "--host",             "0.0.0.0",
+        "--port",             str(port),
+        "--log-format",       "json",
     ]
 
     print(f"Starting speculative decoding server on :{port}")

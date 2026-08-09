@@ -16,13 +16,13 @@ echo "NOTE: Measuring TTFT reduction. Throughput gain vs KleidiAI-only is expect
 pkill -f llama-server 2>/dev/null || true; sleep 2
 
 ~/llama.cpp/build/bin/llama-server \
-  -m  ~/llama.cpp/models/main_model.gguf \
+  -m ~/llama.cpp/models/main_model.gguf \
   --model-draft ~/llama.cpp/models/draft_model.gguf \
   --spec-type draft-simple \
-  --draft-max 5 \
+  --spec-draft-n-max 5 \
   -t $T \
   -ngl 0 \
-  --load-mode mlock \ # --mlock
+  --load-mode mlock \
   -b 512 \
   -c 2048 \
   --host 0.0.0.0 --port 8000 \
