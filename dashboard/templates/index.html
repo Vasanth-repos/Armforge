@@ -164,11 +164,11 @@
             </div>
           </div>
           <div class="mt-4">
-            <div class="text-3xl font-extrabold text-white font-mono">+{{ tps_pct }}%</div>
+            <div class="text-3xl font-extrabold text-white font-mono">+{{ max_tps_pct }}%</div>
             <div class="text-xs text-gray-400 mt-1 flex items-center gap-1">
               <span>{{ baseline_tps }}</span> 
               <i data-lucide="arrow-right" class="w-3 h-3 text-gray-500"></i>
-              <span class="text-emerald-400 font-bold font-mono">{{ optimized_tps }} tok/s</span>
+              <span class="text-emerald-400 font-bold font-mono">{{ max_tps }} tok/s</span>
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
@@ -547,17 +547,17 @@
           </div>
           <div class="space-y-3">
             <div>
-              <div class="text-xs text-cyan-300">Throughput Acceleration</div>
+              <div class="text-xs text-cyan-300">Throughput Acceleration (KleidiAI Kernels)</div>
               <div class="text-3xl font-extrabold text-emerald-400 font-mono flex items-center gap-2">
-                {{ optimized_tps }} tok/s
-                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">+{{ tps_pct }}%</span>
+                {{ kleidiai_tps }} tok/s
+                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">+{{ kleidiai_tps_pct }}%</span>
               </div>
             </div>
             <div>
-              <div class="text-xs text-cyan-300">TTFT Latency Reduction</div>
+              <div class="text-xs text-cyan-300">TTFT Latency Reduction (Speculative Decoding)</div>
               <div class="text-2xl font-bold text-cyan-300 font-mono flex items-center gap-2">
                 {{ optimized_ttft }} ms
-                <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold">-{{ ttft_pct }}%</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold">-{{ speculative_ttft_pct }}%</span>
               </div>
             </div>
           </div>
