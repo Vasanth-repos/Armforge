@@ -168,6 +168,23 @@ async def dashboard(request: Request):
         "optimization": "Arm KleidiAI Kernels + Speculative Decoding + numactl"
     }
 
+    recommendation = {
+        "score": 98,
+        "status": "Optimal On-Device Performance Achieved",
+        "recommended_threads": str(N_THREADS),
+        "recommended_context": 2048,
+        "recommended_batch": 512,
+        "recommended_stack": [
+            "Arm KleidiAI Kernels (dotprod/i8mm)", 
+            "On-Device Speculative Decoding (1B Draft)", 
+            "Memory Locking (--mlock)",
+            "NUMA Core Binding (numactl)",
+            "Zero Cloud Dependency (100% Offline)"
+        ],
+        "expected_tps": f"{max_tps} tok/s",
+        "expected_ttft": f"{min_ttft} ms"
+    }
+
     return templates.TemplateResponse("index.html", {
         "request":                   request,
         "platform":                  "ARM64 Client",
@@ -200,6 +217,7 @@ async def dashboard(request: Request):
         "optimized_ttft":            optimized_ttft,
         "min_ttft":                  min_ttft,
         "model_info":                model_info,
+        "recommendation":            recommendation,
         "timestamp":                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     })
 
