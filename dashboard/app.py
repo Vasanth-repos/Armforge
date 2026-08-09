@@ -281,13 +281,17 @@ async def dashboard(request: Request):
     max_tps = max(kleidiai_tps, optimized_tps)
     min_ttft = min(kleidiai_ttft, optimized_ttft)
 
-    # Exact mathematical percentage gains vs baseline
+    # Exact percentage calculations
     kleidiai_tps_pct = round(((kleidiai_tps - baseline_tps) / baseline_tps) * 100, 1) if baseline_tps > 0 else 55.8
     speculative_tps_pct = round(((optimized_tps - baseline_tps) / baseline_tps) * 100, 1) if baseline_tps > 0 else 53.8
     max_tps_pct = round(((max_tps - baseline_tps) / baseline_tps) * 100, 1) if baseline_tps > 0 else 55.8
 
     kleidiai_ttft_pct = round(((baseline_ttft - kleidiai_ttft) / baseline_ttft) * 100, 1) if baseline_ttft > 0 else 17.3
     speculative_ttft_pct = round(((baseline_ttft - optimized_ttft) / baseline_ttft) * 100, 1) if baseline_ttft > 0 else 44.0
+
+    # Ensure alias fallback variables exist for all template usages
+    tps_pct = max_tps_pct
+    ttft_pct = speculative_ttft_pct
 
     model_info = {
         "main_model": "Llama-3.2-3B-Instruct (On-Device)",
@@ -329,6 +333,8 @@ async def dashboard(request: Request):
         "results":              results,
         "summary_md_content":   summary_md_content,
         "summary_path":         summary_path or "results/SUMMARY.md",
+        "tps_pct":              tps_pct,
+        "ttft_pct":             ttft_pct,
         "max_tps_pct":          max_tps_pct,
         "kleidiai_tps_pct":     kleidiai_tps_pct,
         "speculative_tps_pct":  speculative_tps_pct,
