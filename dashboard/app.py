@@ -198,10 +198,11 @@ def ensure_server_running(port: int):
         except Exception:
             pass
 
-    for _ in range(15):
-        time.sleep(1)
+    # Quick non-blocking probe (max 0.5s) instead of blocking for 15 seconds
+    for _ in range(3):
+        time.sleep(0.15)
         try:
-            r = requests.get(f"http://localhost:{port}/health", timeout=1.5)
+            r = requests.get(f"http://localhost:{port}/health", timeout=0.3)
             if r.status_code in (200, 404):
                 return True
         except Exception:

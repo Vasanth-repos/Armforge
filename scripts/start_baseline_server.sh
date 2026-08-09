@@ -9,7 +9,12 @@ ARMFORGE_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$ARMFORGE_DIR"
 
 BASELINE_SERVER=~/llama.cpp/build_baseline/bin/llama-server
-MODEL=~/llama.cpp/models/main_model.gguf
+[ -f "$BASELINE_SERVER" ] || BASELINE_SERVER=~/llama.cpp/build/bin/llama-server
+
+MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
+[ -f "$MODEL" ] || MODEL="$ARMFORGE_DIR/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
+[ -f "$MODEL" ] || MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+[ -f "$MODEL" ] || MODEL="$ARMFORGE_DIR/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
 
 if [ ! -f "$BASELINE_SERVER" ]; then
   echo "Baseline llama-server binary not found! Building baseline server now..."
@@ -17,18 +22,18 @@ if [ ! -f "$BASELINE_SERVER" ]; then
 fi
 
 if [ ! -f "$MODEL" ]; then
-  echo "Model file main_model.gguf not found! Downloading model now..."
+  echo "Model file not found! Downloading models now..."
   bash "$SCRIPT_DIR/02_download_models.sh"
 fi
 
-T=$(cat "$ARMFORGE_DIR/results/optimal_threads.txt" 2>/dev/null || echo $(nproc))
-echo "=== Starting Baseline Model Server on port 8001 (threads=$T) ==="
+T=$(cat "$ARMFORGE_DIR/results/optimal_threads.txt" 2>/dev/null || cat "$ARMFORGE_DIR/results/best_threads.txt" 2>/dev/null || echo 4)
+echo "=== Starting Baseline Model Server on port 8001 (threads=$T, model=$(basename $MODEL)) ==="
 
 pkill -f "port 8001" 2>/dev/null || true; sleep 1
 
-$BASELINE_SERVER \
-  -m $MODEL \
-  -t $T \
+exec $BASELINE_SERVER \
+  -m "$MODEL" \
+  -t "$T" \
   -ngl 0 \
   --load-mode mlock \
   -c 2048 \
