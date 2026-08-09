@@ -3,7 +3,8 @@ FastAPI dashboard with:
   - /           → full results UI
   - /api/results → JSON all bench results
   - /api/summary → SUMMARY.md text
-  - /api/stream  → SSE: streams llama-server output token by token
+  - /api/generate → POST: proxy streaming completion to llama-server
+  - /api/stream  → SSE: streams llama-cli output token by token
   - /api/download/summary → download SUMMARY.md
   - /api/download/results → download llamacpp_results.json
 """
@@ -119,6 +120,72 @@ def get_hardware_name():
         if system == "Windows": return "Snapdragon X / Windows ARM Laptop"
         return "ARM64 Client Laptop"
     return "ARM64 Client Device"
+
+def ensure_server_running(port: int):
+    """Auto-spawn requested llama-server if port is not active."""
+    health_url = f"http://localhost:{port}/health"
+    try:
+        r = requests.get(health_url, timeout=1.5)
+        if r.status_code in (200, 404):
+            return True
+    except Exception:
+        pass
+
+    model = str(MAIN_Q4)
+    threads = str(N_THREADS)
+
+    if port == 8001:
+        server_bin = os.path.expanduser("~/llama.cpp/build_baseline/bin/llama-server")
+        if not os.path.exists(server_bin):
+            server_bin = os.path.expanduser("build_baseline/bin/llama-server")
+        
+        cmd = [
+            server_bin,
+            "-m", model,
+            "-t", threads,
+            "-ngl", "0",
+            "--load-mode", "mlock",
+            "-c", "2048",
+            "--host", "0.0.0.0",
+            "--port", "8001"
+        ]
+        print("Auto-launching Baseline model server on port 8001...")
+        try:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+    
+    else:
+        server_bin = os.path.expanduser("~/llama.cpp/build/bin/llama-server")
+        if not os.path.exists(server_bin):
+            server_bin = os.path.expanduser("~/llama.cpp/build_kleidiai/bin/llama-server")
+
+        cmd = [
+            server_bin,
+            "-m", model,
+            "-t", threads,
+            "-ngl", "0",
+            "--load-mode", "mlock",
+            "-b", "512",
+            "-c", "2048",
+            "--host", "0.0.0.0",
+            "--port", "8000"
+        ]
+        print("Auto-launching KleidiAI model server on port 8000...")
+        try:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+
+    for _ in range(15):
+        time.sleep(1)
+        try:
+            r = requests.get(f"http://localhost:{port}/health", timeout=1.5)
+            if r.status_code in (200, 404):
+                return True
+        except Exception:
+            pass
+    return False
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
@@ -277,6 +344,55 @@ async def download_results():
         if os.path.exists(p):
             return FileResponse(p, media_type="application/json", filename="armforge_results.json")
     return JSONResponse(content={"error": "Results JSON not generated yet."}, status_code=404)
+
+@app.post("/api/generate")
+async def generate_stream(req: GenerateRequest):
+    """Proxy streaming completion request to local llama-server with auto-spawn fallback."""
+    target_port = req.port
+    
+    server_ready = ensure_server_running(target_port)
+    if not server_ready:
+        def err_stream():
+            yield f"data: [ERROR] Failed to start model server on port {target_port}. Please run: bash scripts/start_baseline_server.sh\n\n"
+        return StreamingResponse(err_stream(), media_type="text/event-stream")
+
+    target_url = f"http://localhost:{target_port}/v1/completions"
+
+    def stream_generator():
+        payload = {
+            "prompt": req.prompt,
+            "max_tokens": req.max_tokens,
+            "stream": True
+        }
+        start_time = time.perf_counter()
+        first_token_time = None
+        token_count = 0
+
+        try:
+            r = requests.post(target_url, json=payload, stream=True, timeout=120)
+            for chunk in r.iter_lines():
+                if chunk:
+                    line = chunk.decode('utf-8')
+                    if line.startswith("data: "):
+                        if first_token_time is None:
+                            first_token_time = time.perf_counter() - start_time
+                        token_count += 1
+                        yield f"{line}\n\n"
+            
+            total_elapsed = time.perf_counter() - start_time
+            tps = token_count / total_elapsed if total_elapsed > 0 else 0
+            stats = {
+                "ttft_ms": round((first_token_time or 0) * 1000, 1),
+                "tokens": token_count,
+                "elapsed_s": round(total_elapsed, 2),
+                "tps": round(tps, 2)
+            }
+            yield f"data: [STATS] {json.dumps(stats)}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            yield f"data: [ERROR] {str(e)}\n\n"
+
+    return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
 @app.get("/api/stream")
 async def stream_inference(prompt: str = "Tell me about Arm KleidiAI and i8mm matrix multiply."):
