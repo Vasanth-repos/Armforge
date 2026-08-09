@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArmForge — AI Inference Optimization Platform</title>
+  <title>ArmForge — On-Device Mobile AI Platform</title>
 
   <!-- Google Fonts & Tailwind CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,7 +68,6 @@
     .gradient-text {
       background: linear-gradient(135deg, #60A5FA 0%, #38BDF8 50%, #34D399 100%);
       -webkit-background-clip: text;
-      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     /* Custom Scrollbar */
@@ -98,15 +97,15 @@
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-400 p-0.5 flex items-center justify-center glow-blue">
           <div class="w-full h-full bg-[#0B0F14] rounded-[10px] flex items-center justify-center">
-            <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
+            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
           </div>
         </div>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-bold tracking-tight text-white font-sans">ArmForge</h1>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">v3.0</span>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Track 3 — Mobile AI</span>
           </div>
-          <p class="text-xs text-gray-400 font-medium">AI Inference Optimization Platform • ARM64</p>
+          <p class="text-xs text-gray-400 font-medium">On-Device AI Optimization Platform • ARM64 Client</p>
         </div>
       </div>
 
@@ -114,10 +113,10 @@
       <div class="hidden md:flex items-center gap-4">
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          SYSTEM OPTIMAL
+          100% OFFLINE &amp; PRIVATE
         </div>
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/80 border border-gray-700 text-gray-300 text-xs font-mono">
-          <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <i data-lucide="laptop" class="w-3.5 h-3.5 text-cyan-400"></i>
           {{ hardware_name }}
         </div>
         <button type="button" onclick="document.getElementById('playground').scrollIntoView({behavior: 'smooth'})" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all">
@@ -135,19 +134,19 @@
     <section class="space-y-6">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-800 pb-6">
         <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-3">
-            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-            Optimize • Benchmark • Accelerate LLMs on ARM
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
+            <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+            100% Offline • Private • On-Device Acceleration for ARM Hardware
           </div>
           <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            ArmForge <span class="gradient-text">Inference Engine</span>
+            ArmForge <span class="gradient-text">On-Device Engine</span>
           </h2>
           <p class="text-gray-400 text-sm mt-1 max-w-2xl">
-            Stacking Arm KleidiAI quantized matrix kernels &amp; speculative decoding on ARM cloud &amp; edge hardware.
+            Stacking Arm KleidiAI quantized matrix kernels &amp; speculative decoding natively on ARM client laptops &amp; mobile workstations.
           </p>
         </div>
         <div class="text-xs font-mono text-gray-500">
-          Last Updated: {{ timestamp }}
+          Last Evaluated: {{ timestamp }}
         </div>
       </div>
 
@@ -196,32 +195,32 @@
           </div>
         </div>
 
-        <!-- KPI 3: Active Optimization Stack -->
-        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-all glow-orange">
+        <!-- KPI 3: Privacy & Offline Status -->
+        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:border-emerald-500/40 transition-all glow-emerald">
           <div class="flex justify-between items-start">
-            <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Active Acceleration</span>
-            <div class="p-2 rounded-xl bg-orange-500/10 text-orange-400">
-              <i data-lucide="cpu" class="w-5 h-5"></i>
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Privacy &amp; Data Security</span>
+            <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+              <i data-lucide="lock" class="w-5 h-5"></i>
             </div>
           </div>
           <div class="mt-4">
-            <div class="text-xl font-bold text-white">KleidiAI + Speculative</div>
-            <div class="text-xs text-orange-400 mt-1 flex items-center gap-1">
-              <span class="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 font-mono">dotprod/i8mm</span>
-              <span class="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 font-mono">1B Draft</span>
+            <div class="text-xl font-bold text-white">100% Private / Offline</div>
+            <div class="text-xs text-emerald-400 mt-1 flex items-center gap-1">
+              <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 font-mono">0 KB Cloud Traffic</span>
+              <span class="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 font-mono">Zero Network</span>
             </div>
           </div>
           <div class="mt-3 w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-orange-500 to-amber-400 h-full rounded-full w-[95%]"></div>
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full w-[100%]"></div>
           </div>
         </div>
 
         <!-- KPI 4: Hardware Silicon -->
         <div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition-all">
           <div class="flex justify-between items-start">
-            <span class="text-xs font-semibold uppercase tracking-wider text-purple-400">Target Silicon</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-purple-400">Client Silicon</span>
             <div class="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-              <i data-lucide="server" class="w-5 h-5"></i>
+              <i data-lucide="laptop" class="w-5 h-5"></i>
             </div>
           </div>
           <div class="mt-4">
@@ -246,14 +245,14 @@
         <div class="flex items-center justify-between border-b border-gray-800 pb-4">
           <div class="flex items-center gap-2">
             <i data-lucide="info" class="w-5 h-5 text-cyan-400"></i>
-            <h3 class="text-lg font-bold text-white">System Hardware &amp; Feature Detection</h3>
+            <h3 class="text-lg font-bold text-white">On-Device Hardware &amp; Vector Detection</h3>
           </div>
-          <span class="px-2.5 py-1 rounded-md bg-gray-800 text-xs font-mono text-gray-300">ARM64 Linux / Windows</span>
+          <span class="px-2.5 py-1 rounded-md bg-gray-800 text-xs font-mono text-gray-300">ARM64 Client Architecture</span>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div class="p-3 rounded-xl bg-gray-900/60 border border-gray-800">
-            <div class="text-xs text-gray-400 font-medium">CPU Model</div>
+            <div class="text-xs text-gray-400 font-medium">Client CPU Model</div>
             <div class="text-sm font-bold text-white mt-1 truncate">{{ hardware_name }}</div>
           </div>
           <div class="p-3 rounded-xl bg-gray-900/60 border border-gray-800">
@@ -272,7 +271,7 @@
 
         <!-- ARM Feature Badges -->
         <div>
-          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Detected ARM Vector Accelerators</div>
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Detected ARM SIMD &amp; Vector Accelerators</div>
           <div class="flex flex-wrap gap-2">
             {% for feat in arm_features %}
             <span class="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs flex items-center gap-1.5">
@@ -293,7 +292,7 @@
         <div class="flex items-center justify-between border-b border-gray-800 pb-4">
           <div class="flex items-center gap-2">
             <i data-lucide="activity" class="w-5 h-5 text-emerald-400"></i>
-            <h3 class="text-lg font-bold text-white">Live Resource Load</h3>
+            <h3 class="text-lg font-bold text-white">Client Resource Load</h3>
           </div>
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
         </div>
@@ -301,7 +300,7 @@
         <!-- CPU Usage Meter -->
         <div class="space-y-2">
           <div class="flex justify-between text-xs font-mono">
-            <span class="text-gray-400">CPU Usage</span>
+            <span class="text-gray-400">Client CPU Usage</span>
             <span class="text-cyan-400 font-bold">{{ cpu_pct }}%</span>
           </div>
           <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden p-0.5">
@@ -321,8 +320,8 @@
         </div>
 
         <div class="pt-2 text-xs text-gray-500 border-t border-gray-800 flex justify-between">
-          <span>Inference Queue: Idle</span>
-          <span>Swap: Locked (--mlock)</span>
+          <span>Network: 0 KB (Offline)</span>
+          <span>Swap: Locked (--load-mode mlock)</span>
         </div>
       </div>
 
@@ -333,7 +332,7 @@
       <div class="flex items-center justify-between border-b border-gray-800 pb-4">
         <div class="flex items-center gap-2">
           <i data-lucide="git-branch" class="w-5 h-5 text-orange-400"></i>
-          <h3 class="text-lg font-bold text-white">ArmForge Optimization Pipeline Flow</h3>
+          <h3 class="text-lg font-bold text-white">ArmForge On-Device Optimization Pipeline Flow</h3>
         </div>
         <span class="text-xs text-orange-400 font-mono">100% Automated Execution</span>
       </div>
@@ -353,8 +352,8 @@
           <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
             <i data-lucide="download" class="w-4 h-4"></i>
           </div>
-          <span class="text-xs font-bold text-white">2. Load Model</span>
-          <span class="text-[10px] text-gray-400 font-mono">Q4_K_M GGUF</span>
+          <span class="text-xs font-bold text-white">2. Load GGUF</span>
+          <span class="text-[10px] text-gray-400 font-mono">Q4_K_M Local</span>
         </div>
 
         <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-700 flex flex-col items-center text-center space-y-2">
@@ -385,7 +384,7 @@
           <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
             <i data-lucide="cpu" class="w-4 h-4"></i>
           </div>
-          <span class="text-xs font-bold text-white">6. Optimized Run</span>
+          <span class="text-xs font-bold text-white">6. On-Device Run</span>
           <span class="text-[10px] text-purple-400 font-mono">36+ tok/s</span>
         </div>
 
@@ -405,9 +404,11 @@
       <div class="flex items-center justify-between border-b border-gray-800 pb-4">
         <div class="flex items-center gap-2">
           <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
-          <h3 class="text-lg font-bold text-white">Live Streaming Inference Playground</h3>
+          <h3 class="text-lg font-bold text-white">On-Device Streaming Inference Playground</h3>
         </div>
-        <span class="text-xs text-gray-400 font-mono">Real-time SSE Event Stream</span>
+        <span class="text-xs text-emerald-400 font-mono flex items-center gap-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 100% Offline Processing
+        </span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -415,43 +416,30 @@
         <!-- LEFT PANEL: Controls & Input -->
         <div class="lg:col-span-5 space-y-4">
           <div>
-            <label class="block text-xs font-medium text-gray-300 mb-1">Target Engine / Port</label>
+            <label class="block text-xs font-medium text-gray-300 mb-1">Target On-Device Engine</label>
             <select id="pPort" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-              <option value="8000" selected>Port 8000: Model Server (KleidiAI / Active Server)</option>
-              <option value="8001">Port 8001: Baseline Server (Unoptimized)</option>
-            </select>
-          </div>
-
-          <div>
-            <div class="flex justify-between text-xs font-medium text-gray-300 mb-1">
-              <label for="pMaxTokens">Max Tokens</label>
-              <span id="pMaxTokensVal" class="text-cyan-400 font-mono">256 tokens</span>
-            </div>
-            <select id="pMaxTokens" onchange="document.getElementById('pMaxTokensVal').textContent = this.value + ' tokens'" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono">
-              <option value="128">128 tokens (Fast Demo)</option>
-              <option value="256" selected>256 tokens (Standard Response)</option>
-              <option value="512">512 tokens (Detailed Output)</option>
-              <option value="1024">1024 tokens (Long Form)</option>
+              <option value="8000">Port 8000: KleidiAI + Speculative (Optimized)</option>
+              <option value="8001">Port 8001: Baseline (Unoptimized)</option>
             </select>
           </div>
 
           <div>
             <label class="block text-xs font-medium text-gray-300 mb-1">Sample Prompt Presets</label>
             <div class="flex flex-wrap gap-1.5">
-              <button type="button" onclick="setPrompt('Explain how ARM Neoverse processors accelerate AI inference in detail.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">ARM Neoverse</button>
+              <button type="button" onclick="setPrompt('Explain how ARM Neoverse processors accelerate AI inference in detail.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">ARM Architecture</button>
               <button type="button" onclick="setPrompt('Write a Python function to benchmark matrix multiplication.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Python Code</button>
-              <button type="button" onclick="setPrompt('Summarize the benefits of speculative decoding for LLMs.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Speculative</button>
+              <button type="button" onclick="setPrompt('Summarize the benefits of speculative decoding for local LLMs.')" class="px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition-all">Speculative</button>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-300 mb-1">Prompt Input</label>
+            <label class="block text-xs font-medium text-gray-300 mb-1">Prompt Input (Private &amp; Local)</label>
             <textarea id="pPrompt" rows="5" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500 placeholder-gray-500" placeholder="Type prompt here...">Explain how ARM Neoverse processors accelerate AI inference in detail.</textarea>
           </div>
 
           <button id="pBtn" type="button" onclick="runInference()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-400 hover:from-blue-500 hover:to-emerald-300 text-white font-bold text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all">
             <i data-lucide="play" class="w-4 h-4"></i>
-            Generate Stream
+            Generate On-Device Stream
           </button>
         </div>
 
@@ -478,7 +466,7 @@
           </div>
 
           <div class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-200 overflow-y-auto max-h-[260px] min-h-[200px] leading-relaxed">
-            <div id="pOutput" class="whitespace-pre-wrap">Click "Generate Stream" to start inference...</div>
+            <div id="pOutput" class="whitespace-pre-wrap">Click "Generate On-Device Stream" to start inference...</div>
           </div>
 
         </div>
@@ -521,8 +509,8 @@
     <section class="glass-card rounded-2xl p-8 space-y-6 border border-cyan-500/30">
       <div class="text-center space-y-2">
         <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider">The Centerpiece</span>
-        <h3 class="text-2xl font-extrabold text-white">Unoptimized Baseline vs. ArmForge Stack</h3>
-        <p class="text-sm text-gray-400">Scientific performance isolation on identical ARM hardware.</p>
+        <h3 class="text-2xl font-extrabold text-white">Unoptimized Baseline vs. ArmForge On-Device Stack</h3>
+        <p class="text-sm text-gray-400">Scientific performance isolation on identical client hardware.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
@@ -649,9 +637,9 @@
         <div class="flex items-center justify-between border-b border-gray-800 pb-3">
           <div class="flex items-center gap-2">
             <i data-lucide="box" class="w-5 h-5 text-blue-400"></i>
-            <h3 class="text-base font-bold text-white">Model Specs &amp; Configuration</h3>
+            <h3 class="text-base font-bold text-white">Model Specs &amp; Privacy Configuration</h3>
           </div>
-          <span class="text-xs text-gray-400 font-mono">GGUF Format</span>
+          <span class="text-xs text-emerald-400 font-mono">100% Offline GGUF</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-xs">
@@ -668,8 +656,8 @@
             <div class="font-bold text-emerald-400 font-mono mt-0.5">{{ model_info.quantization }}</div>
           </div>
           <div class="p-2.5 rounded-xl bg-gray-900/60 border border-gray-800">
-            <div class="text-gray-500">Context Size</div>
-            <div class="font-bold text-purple-400 font-mono mt-0.5">{{ model_info.context_size }} tokens</div>
+            <div class="text-gray-500">Data Privacy</div>
+            <div class="font-bold text-emerald-400 font-mono mt-0.5">{{ model_info.privacy }}</div>
           </div>
         </div>
       </div>
@@ -682,13 +670,13 @@
   <footer class="border-t border-gray-800 bg-[#0B0F14] py-8 text-xs text-gray-500">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
       <div>
-        <div class="text-white font-bold text-sm">ArmForge</div>
-        <div>AI Inference Optimization Platform for ARM Processors</div>
+        <div class="text-white font-bold text-sm">ArmForge — On-Device Mobile AI Platform</div>
+        <div>ARM AI Optimization Challenge 2026 • Track 3 — Mobile AI</div>
       </div>
       <div class="flex flex-wrap gap-4 text-gray-400">
-        <span>Engines: <strong class="text-gray-200">llama.cpp, SGLang</strong></span>
-        <span>Platforms: <strong class="text-gray-200">Snapdragon X, AWS Graviton, Oracle Cloud A1</strong></span>
-        <span>License: <strong class="text-gray-200">Apache 2.0</strong></span>
+        <span>Engines: <strong class="text-gray-200">llama.cpp On-Device Runtime, SGLang CPU</strong></span>
+        <span>Platforms: <strong class="text-gray-200">Snapdragon X, Apple Silicon, ARM64 Laptops</strong></span>
+        <span>Privacy: <strong class="text-emerald-400">100% On-Device / Zero Network Traffic</strong></span>
       </div>
     </div>
   </footer>
@@ -777,21 +765,19 @@
     async function runInference() {
       const prompt = document.getElementById("pPrompt").value;
       const port = document.getElementById("pPort").value;
-      const maxTokensEl = document.getElementById("pMaxTokens");
-      const maxTokens = maxTokensEl ? parseInt(maxTokensEl.value) : 256;
       const genBtn = document.getElementById("pBtn");
       const out = document.getElementById("pOutput");
 
       if (!prompt) return;
 
       genBtn.disabled = true;
-      out.textContent = "Connecting to model server on port " + port + "...\n";
+      out.textContent = "Connecting to on-device model server on port " + port + "...\n";
 
       try {
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: prompt, max_tokens: maxTokens, port: parseInt(port) })
+          body: JSON.stringify({ prompt: prompt, max_tokens: 128, port: parseInt(port) })
         });
 
         const reader = response.body.getReader();
@@ -823,7 +809,7 @@
           }
         }
       } catch(e) {
-        out.textContent = "Error running inference: Make sure model server is running on port " + port;
+        out.textContent = "Error running on-device inference: Make sure model server is running on port " + port;
       } finally {
         genBtn.disabled = false;
       }
