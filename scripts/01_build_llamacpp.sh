@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-source ~/armforge_env/bin/activate
+source ~/armforge_env/bin/activate 2>/dev/null || true
 echo "=== Building llama.cpp (KleidiAI ON) ==="
 
 cd ~
@@ -25,6 +25,7 @@ cmake -B build \
   -DGGML_BLAS=ON \
   -DGGML_BLAS_VENDOR=OpenBLAS \
   -DCMAKE_BUILD_TYPE=Release \
+  -DLLAMA_BUILD_SERVER_WEBUI=OFF \
   $ARCH_FLAG
 
 cmake --build build -j$(nproc)
