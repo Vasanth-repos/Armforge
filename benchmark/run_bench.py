@@ -1,6 +1,6 @@
 """
 6 benchmark configurations with warmup discard, correct acceptance rate parsing,
-TTFT curve at 3 prompt lengths, and numactl binding.
+TTFT curve at 3 prompt lengths, numactl binding, and live dashboard API notification.
 
 Configs:
   [1] Baseline Q8_0 (KleidiAI OFF)
@@ -10,7 +10,7 @@ Configs:
   [5] KleidiAI Q4_K_M + speculative ngram-simple (zero overhead)
   [6] KleidiAI Q4_K_M + speculative draft-simple + mlock + numactl
 
-Output: results/llamacpp_results.json
+Output: results/llamacpp_results.json and notification to http://localhost:8080/api/result
 """
 import subprocess, time, json, statistics, re, shutil, os, platform, argparse
 from datetime import datetime
@@ -106,10 +106,6 @@ def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
         return None, str(e)
 
 def parse_acceptance_rate(stderr: str) -> float | None:
-    """
-    Correct log line format in current llama.cpp:
-      draft_accept_rate = 0.72  (or as percentage in some builds: 72.00%)
-    """
     for line in stderr.splitlines():
         m = re.search(r"draft_accept_rate\s*=\s*([\d.]+)", line)
         if m:
@@ -204,6 +200,31 @@ def run(mode, port):
     if acc_draft: print(f"  Draft Acceptance: {acc_draft}%")
     if acc_ngram: print(f"  N-gram Acceptance: {acc_ngram}%")
     print(f"  Saved:     {fname}")
+
+    # POST result dict to live Dashboard API
+    post_payload = {
+        "mode": mode,
+        "timestamp": results.get("timestamp", datetime.now().isoformat()),
+        "platform": "arm64",
+        "avg_tps": results.get("avg_tps", 0.0),
+        "avg_ttft_ms": results.get("avg_ttft_ms", 0.0),
+        "min_tps": results.get("min_tps", 0.0),
+        "max_tps": results.get("max_tps", 0.0),
+        "samples": results.get("samples", 5),
+        "ttft_curve": results.get("ttft_curve", {}),
+        "draft_acceptance_rate_pct": results.get("draft_acceptance_rate_pct"),
+        "ngram_acceptance_rate_pct": results.get("ngram_acceptance_rate_pct"),
+    }
+    
+    try:
+        r_post = requests.post("http://localhost:8080/api/result", json=post_payload, timeout=3)
+        if r_post.status_code == 200:
+            print("  Pushed result live to Dashboard (http://localhost:8080/api/result)")
+        else:
+            print(f"  Dashboard POST response: HTTP {r_post.status_code}")
+    except Exception as e:
+        print(f"  Dashboard POST warning (http://localhost:8080): {e} (continuing benchmark)")
+
     return results
 
 if __name__ == '__main__':
