@@ -1,25 +1,31 @@
-# Multi-stage ARM64 Dockerfile for ArmForge
-FROM ubuntu:22.04 AS builder
+# ARM64 explicit — prevents Docker from silently pulling x86 layers
+FROM --platform=linux/arm64 ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
-    build-essential cmake git python3 python3-pip curl \
-    libblas-dev liblapack-dev libopenblas-dev pkg-config libnuma-dev numactl
+    build-essential cmake git python3.12 python3.12-venv \
+    python3-pip wget curl numactl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY . .
 
-# Clone and build llama.cpp with KleidiAI
-RUN git clone https://github.com/ggml-org/llama.cpp /app/llama.cpp && \
-    cd /app/llama.cpp && \
-    cmake -B build -DGGML_NATIVE=OFF -DGGML_CPU_KLEIDIAI=ON -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -j$(nproc)
+# Python env
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Install Python dependencies
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# Build llama.cpp KleidiAI inside container
+RUN git clone https://github.com/ggml-org/llama.cpp /opt/llama.cpp && \
+    cmake -B /opt/llama.cpp/build_kleidiai \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DGGML_KLEIDIAI=ON \
+        -DGGML_CPU_ARM_ARCH="armv8.2-a+dotprod+i8mm" \
+        -DLLAMA_BUILD_SERVER_WEBUI=OFF \
+        /opt/llama.cpp && \
+    cmake --build /opt/llama.cpp/build_kleidiai --config Release -j$(nproc)
 
-COPY . /app
+ENV LLAMA_CPP_HOME=/opt/llama.cpp
+EXPOSE 8080
 
-EXPOSE 8000 8080
-
-CMD ["bash", "scripts/run_all.sh"]
+CMD ["uvicorn", "dashboard.app:app", "--host", "0.0.0.0", "--port", "8080"]

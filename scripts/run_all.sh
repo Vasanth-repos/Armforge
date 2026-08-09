@@ -49,6 +49,7 @@ echo " 🎉 ArmForge Pipeline Execution Complete!"
 echo "============================================================"
 
 source ~/armforge_env/bin/activate
+python benchmark/bench_llama_bench.py
 python benchmark/compare.py
 
 echo ""

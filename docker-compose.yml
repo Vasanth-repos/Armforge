@@ -1,16 +1,14 @@
-version: '3.8'
-
+version: "3.9"
 services:
   armforge:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: armforge_suite
-    restart: unless-stopped
+    platform: linux/arm64      # REQUIRED — prevents x86 emulation
     ports:
-      - "8000:8000"
       - "8080:8080"
     volumes:
       - ./results:/app/results
+      - ${HOME}/armforge/models:/root/armforge/models:ro
     environment:
       - PYTHONUNBUFFERED=1

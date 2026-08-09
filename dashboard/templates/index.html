@@ -603,9 +603,14 @@
           <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
           <h3 class="text-lg font-bold text-white">Live Benchmark Summary Report</h3>
         </div>
-        <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs">
-          {{ summary_path }}
-        </span>
+        <div class="flex items-center gap-2">
+          <a href="/api/download/summary" class="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-mono text-xs transition-all">
+            ⬇ SUMMARY.md
+          </a>
+          <a href="/api/download/results" class="px-2.5 py-1 rounded bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-300 font-mono text-xs transition-all">
+            ⬇ JSON Data
+          </a>
+        </div>
       </div>
       <div class="bg-gray-950 border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
 {{ summary_md_content }}

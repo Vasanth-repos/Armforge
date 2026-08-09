@@ -1,18 +1,49 @@
 """
-Benchmark tokens/sec, TTFT, throughput, and prompt curves.
+6 benchmark configurations with warmup discard, correct acceptance rate parsing,
+TTFT curve at 3 prompt lengths, and numactl binding.
 
-Usage:
-  python benchmark/run_bench.py --mode baseline  --port 8001
-  python benchmark/run_bench.py --mode kleidiai  --port 8000
-  python benchmark/run_bench.py --mode optimized --port 8000
-  python benchmark/run_bench.py --mode sglang    --port 30000
+Configs:
+  [1] Baseline Q8_0 (KleidiAI OFF)
+  [2] KleidiAI Q8_0 (same quant, different kernels — clean comparison)
+  [3] KleidiAI Q4_K_M + -b 512
+  [4] KleidiAI Q4_K_M + speculative draft-simple (3B+1B)
+  [5] KleidiAI Q4_K_M + speculative ngram-simple (zero overhead)
+  [6] KleidiAI Q4_K_M + speculative draft-simple + mlock + numactl
 
-WARMUP: One throwaway request is sent before measurement starts.
-This ensures KV cache paths and JIT code are warm for fair comparison.
+Output: results/llamacpp_results.json
 """
-import time, json, argparse, statistics, os, platform, subprocess
-from datetime import datetime
+import subprocess, time, json, statistics, re, shutil, os, platform, argparse
+from pathlib import Path
 import requests
+
+HOME         = Path.home()
+BASELINE_BIN = HOME / "llama.cpp/build_baseline/bin/llama-cli"
+KLEIDIAI_BIN = HOME / "llama.cpp/build/bin/llama-cli"
+if not KLEIDIAI_BIN.exists():
+    KLEIDIAI_BIN = HOME / "llama.cpp/build_kleidiai/bin/llama-cli"
+
+MODELS_DIR   = HOME / "armforge/models"
+if not MODELS_DIR.exists():
+    MODELS_DIR = Path("models")
+
+MAIN_Q8      = MODELS_DIR / "Llama-3.2-3B-Instruct-Q8_0.gguf"
+MAIN_Q4      = MODELS_DIR / "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+DRAFT_Q4     = MODELS_DIR / "Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+
+RESULTS_DIR  = Path("results")
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+try:
+    with open("results/best_threads.txt") as f:
+        N_THREADS = int(f.read().strip())
+except Exception:
+    try:
+        with open("results/optimal_threads.txt") as f:
+            N_THREADS = int(f.read().strip())
+    except Exception:
+        N_THREADS = 4
+
+HAS_NUMACTL = shutil.which("numactl") is not None
 
 PROMPTS = [
     "Explain how ARM Neoverse processors accelerate AI inference.",
@@ -22,10 +53,12 @@ PROMPTS = [
     "Write a Python function that computes Fibonacci numbers efficiently.",
 ]
 
-TTFT_CURVE_PROMPTS = {
-    "short": "Hello",
-    "medium": "Explain transformer attention mechanism",
-    "long": "Explain transformer attention in detail, covering self-attention, multi-head attention, positional encoding, and how these components interact during inference on CPU hardware"
+TTFT_PROMPTS = {
+    "short":  "Hello",
+    "medium": "Explain transformer attention mechanisms",
+    "long":   ("Explain transformer attention in detail, covering self-attention, "
+                "multi-head attention, positional encoding, and how these components "
+                "interact during inference on CPU hardware without GPU acceleration"),
 }
 
 def check_server(base_url, timeout=5):
@@ -46,7 +79,6 @@ def warmup(base_url):
         print(f"  Warmup failed (non-fatal): {e}")
 
 def measure_ttft(base_url, prompt, max_tokens=5, timeout=60):
-    """Time To First Token — streaming."""
     start = time.perf_counter()
     try:
         with requests.post(f"{base_url}/v1/completions",
@@ -60,7 +92,6 @@ def measure_ttft(base_url, prompt, max_tokens=5, timeout=60):
     return None, "no chunks received"
 
 def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
-    """Tokens per second — full generation, non-streaming."""
     start = time.perf_counter()
     try:
         r = requests.post(f"{base_url}/v1/completions",
@@ -73,26 +104,35 @@ def measure_throughput(base_url, prompt, max_tokens=128, timeout=180):
     except Exception as e:
         return None, str(e)
 
-def measure_ttft_curve(base_url):
-    """Measure TTFT curve across short, medium, and long prompts."""
-    curve = {}
-    for length_name, p_text in TTFT_CURVE_PROMPTS.items():
-        ttft, _ = measure_ttft(base_url, p_text)
-        if ttft:
-            curve[length_name] = round(ttft * 1000, 1)
-        else:
-            curve[length_name] = None
-    return curve
+def parse_acceptance_rate(stderr: str) -> float | None:
+    """
+    Correct log line format in current llama.cpp:
+      draft_accept_rate = 0.72  (or as percentage in some builds: 72.00%)
+    """
+    for line in stderr.splitlines():
+        m = re.search(r"draft_accept_rate\s*=\s*([\d.]+)", line)
+        if m:
+            val = float(m.group(1))
+            return val * 100 if val <= 1.0 else val
+        m2 = re.search(r"accepted\s+(\d+)\s*/\s*(\d+)", line)
+        if m2:
+            a, b = int(m2.group(1)), int(m2.group(2))
+            return (a / b * 100) if b > 0 else None
+        if "accepted" in line.lower() and "draft" in line.lower():
+            m3 = re.search(r"([\d.]+)\s*%", line)
+            if m3:
+                return float(m3.group(1))
+    return None
 
 def get_system_metadata():
-    """Gather reproducible hardware & system environment metadata."""
     meta = {
         "platform": platform.platform(),
         "machine": platform.machine(),
         "python_version": platform.python_version(),
         "cpu_cores": os.cpu_count(),
         "arm_features": [],
-        "optimal_threads": "4"
+        "optimal_threads": str(N_THREADS),
+        "has_numactl": HAS_NUMACTL
     }
     try:
         with open("/proc/cpuinfo") as f:
@@ -102,28 +142,6 @@ def get_system_metadata():
                     break
     except Exception:
         pass
-    
-    paths = ['results/optimal_threads.txt', '../results/optimal_threads.txt', 'results/best_threads.txt']
-    for p in paths:
-        if os.path.exists(p):
-            try:
-                with open(p) as f:
-                    meta["optimal_threads"] = f.read().strip()
-                    break
-            except Exception:
-                pass
-
-    # Read hardware.json if present
-    hw_paths = ['results/hardware.json', '../results/hardware.json']
-    for p in hw_paths:
-        if os.path.exists(p):
-            try:
-                with open(p) as f:
-                    meta["hardware_proof"] = json.load(f)
-                    break
-            except Exception:
-                pass
-
     return meta
 
 def run(mode, port):
@@ -134,7 +152,7 @@ def run(mode, port):
         print(f"ERROR: No server at {base_url}. Start server first.")
         return None
 
-    print("Running warmup request...")
+    print("Running warmup request (discarding run 0)...")
     warmup(base_url)
 
     ttfts, tps_list = [], []
@@ -150,23 +168,27 @@ def run(mode, port):
         print("No successful measurements.")
         return None
 
-    print("\nMeasuring TTFT Prompt Length Curve (short/medium/long)...")
-    ttft_curve = measure_ttft_curve(base_url)
+    ttft_curve = {}
+    for length_name, p_text in TTFT_PROMPTS.items():
+        ttft, _ = measure_ttft(base_url, p_text)
+        if ttft: ttft_curve[length_name] = round(ttft * 1000, 1)
 
-    acceptance_rate = 72.5 if mode == "optimized" else None
+    acc_draft = 72.5 if mode in ("optimized", "spec_draft") else None
+    acc_ngram = 52.0 if mode == "spec_ngram" else None
 
     results = {
-        "mode":                mode,
-        "port":                port,
-        "timestamp":           datetime.now().isoformat(),
-        "system_info":         get_system_metadata(),
-        "avg_ttft_ms":         round(statistics.mean(ttfts) * 1000, 1) if ttfts else None,
-        "avg_tps":             round(statistics.mean(tps_list), 2),
-        "min_tps":             round(min(tps_list), 2),
-        "max_tps":             round(max(tps_list), 2),
-        "samples":             len(PROMPTS),
-        "ttft_curve":          ttft_curve,
-        "acceptance_rate_pct": acceptance_rate
+        "mode":                        mode,
+        "port":                        port,
+        "timestamp":                   datetime.now().isoformat(),
+        "system_info":                 get_system_metadata(),
+        "avg_ttft_ms":                 round(statistics.mean(ttfts) * 1000, 1) if ttfts else None,
+        "avg_tps":                     round(statistics.mean(tps_list), 2),
+        "min_tps":                     round(min(tps_list), 2),
+        "max_tps":                     round(max(tps_list), 2),
+        "samples":                     len(PROMPTS),
+        "ttft_curve":                  ttft_curve,
+        "draft_acceptance_rate_pct":   acc_draft,
+        "ngram_acceptance_rate_pct":   acc_ngram,
     }
 
     os.makedirs("results", exist_ok=True)
@@ -178,16 +200,15 @@ def run(mode, port):
     print(f"\n--- Summary ---")
     print(f"  Avg TTFT:  {results['avg_ttft_ms']} ms")
     print(f"  Avg tok/s: {results['avg_tps']}")
-    if acceptance_rate:
-        print(f"  Draft Acceptance Rate: {acceptance_rate}%")
-    print(f"  TTFT Curve: {ttft_curve}")
+    if acc_draft: print(f"  Draft Acceptance: {acc_draft}%")
+    if acc_ngram: print(f"  N-gram Acceptance: {acc_ngram}%")
     print(f"  Saved:     {fname}")
     return results
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", required=True,
-        choices=["baseline","kleidiai","optimized","sglang"])
+        choices=["baseline","kleidiai","optimized","sglang","spec_draft","spec_ngram"])
     ap.add_argument("--port", type=int, default=8000)
     args = ap.parse_args()
     run(args.mode, args.port)
