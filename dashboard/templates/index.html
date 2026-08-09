@@ -891,8 +891,12 @@
             } else if (line.startsWith("data: ") && !line.includes("[DONE]")) {
               try {
                 const data = JSON.parse(line.replace("data: ", ""));
-                if (data.choices && data.choices[0].text) {
+                if (data.choices && data.choices[0] && data.choices[0].text) {
                   out.textContent += data.choices[0].text;
+                } else if (data.content) {
+                  out.textContent += data.content;
+                } else if (typeof data.text === "string") {
+                  out.textContent += data.text;
                 }
               } catch(e) {}
             }
