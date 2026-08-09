@@ -10,7 +10,7 @@ cd llama.cpp
 IS_WSL=false
 grep -qi microsoft /proc/version 2>/dev/null && IS_WSL=true
 WEBUI_FLAG=""
-$IS_WSL && WEBUI_FLAG="-DLLAMA_BUILD_SERVER_WEBUI=OFF"
+$IS_WSL && WEBUI_FLAG="-DLLAMA_BUILD_SERVER_WEBUI=OFF -DGGML_BUILD_SERVER_WEBUI=OFF -DNPM_EXECUTABLE=FALSE"
 
 FEATURES=$(grep -m1 'Features' /proc/cpuinfo 2>/dev/null || echo "")
 if echo "$FEATURES" | grep -q "i8mm"; then
@@ -30,6 +30,8 @@ cmake -B build \
   -DGGML_CPU_KLEIDIAI=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLAMA_BUILD_SERVER_WEBUI=OFF \
+  -DGGML_BUILD_SERVER_WEBUI=OFF \
+  -DNPM_EXECUTABLE=FALSE \
   $WEBUI_FLAG \
   $ARCH_FLAG
 

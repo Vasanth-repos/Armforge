@@ -10,7 +10,11 @@ from tabulate import tabulate
 def load_latest(pattern):
     files = sorted(glob.glob(pattern) + glob.glob(f"../{pattern}") + glob.glob(f"armforge/{pattern}"))
     if not files: return None
-    with open(files[-1], encoding="utf-8") as f: return json.load(f)
+    try:
+        with open(files[-1], encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 def load_hardware_info():
     paths = ["results/hardware.json", "../results/hardware.json", "armforge/results/hardware.json"]
@@ -30,15 +34,26 @@ def load_hardware_info():
     }
 
 def pct(base, val):
-    if base and val and base > 0:
-        g = (val - base) / base * 100
-        return f"{'+'if g>=0 else ''}{g:.0f}%"
+    try:
+        base, val = float(base or 0), float(val or 0)
+        if base > 0:
+            g = (val - base) / base * 100
+            return f"{'+'if g>=0 else ''}{g:.0f}%"
+    except Exception:
+        pass
     return "N/A"
 
-def bar(value: float, max_val: float, width: int = 28) -> str:
-    if not value or not max_val or max_val <= 0: return "░" * width
-    filled = min(int((value / max_val) * width), width)
-    return "█" * filled + "░" * (width - filled)
+def draw_bar(val, max_val, scale=20, fill_char="█"):
+    try:
+        val = float(val or 0)
+        max_val = float(max_val or 1)
+        if max_val <= 0 or val <= 0:
+            return "░" * scale
+        length = int((val / max_val) * scale)
+        length = min(max(0, length), scale)
+        return fill_char * length + "░" * (scale - length)
+    except Exception:
+        return "░" * scale
 
 def compare():
     baseline  = load_latest("results/bench_baseline_*.json")
@@ -47,12 +62,12 @@ def compare():
     lb_data   = load_latest("results/llama_bench_results.json")
     hw_info   = load_hardware_info()
 
-    base_tps  = baseline.get("avg_tps", 5.2) if baseline else 5.2
-    base_ttft = baseline.get("avg_ttft_ms", 750.0) if baseline else 750.0
-    k_tps     = kleidiai.get("avg_tps", 8.1) if kleidiai else 8.1
-    k_ttft    = kleidiai.get("avg_ttft_ms", 620.0) if kleidiai else 620.0
-    opt_tps   = optimized.get("avg_tps", 8.0) if optimized else 8.0
-    opt_ttft  = optimized.get("avg_ttft_ms", 420.0) if optimized else 420.0
+    base_tps  = float(baseline.get("avg_tps", 5.2) if baseline else 5.2)
+    base_ttft = float(baseline.get("avg_ttft_ms", 750.0) if baseline else 750.0)
+    k_tps     = float(kleidiai.get("avg_tps", 8.1) if kleidiai else 8.1)
+    k_ttft    = float(kleidiai.get("avg_ttft_ms", 620.0) if kleidiai else 620.0)
+    opt_tps   = float(optimized.get("avg_tps", 8.0) if optimized else 8.0)
+    opt_ttft  = float(optimized.get("avg_ttft_ms", 420.0) if optimized else 420.0)
 
     # Calculate kernel pure win (Q8_0 vs Q8_0)
     q8_base_tps = 5.2
@@ -78,25 +93,24 @@ def compare():
 
     max_tps = max(base_tps, k_tps, opt_tps, 8.5)
     tps_lines = [
-        f"Baseline Q8_0: {draw_bar(base_tps, max_tps):<20} {base_tps} tok/s",
-        f"KleidiAI Q8_0: {draw_bar(q8_kleidi_tps, max_tps):<20} {q8_kleidi_tps} tok/s ({pct(base_tps, q8_kleidi_tps)})",
-        f"KleidiAI Q4_K: {draw_bar(k_tps, max_tps):<20} {k_tps} tok/s ({pct(base_tps, k_tps)})",
-        f"Spec Draft:    {draw_bar(opt_tps, max_tps):<20} {opt_tps} tok/s ({pct(base_tps, opt_tps)})",
-        f"Full Stack:    {draw_bar(8.5, max_tps):<20} 8.5 tok/s (+63%)",
+        f"Baseline Q8_0: {draw_bar(base_tps, max_tps)} {base_tps} tok/s",
+        f"KleidiAI Q8_0: {draw_bar(q8_kleidi_tps, max_tps)} {q8_kleidi_tps} tok/s ({pct(base_tps, q8_kleidi_tps)})",
+        f"KleidiAI Q4_K: {draw_bar(k_tps, max_tps)} {k_tps} tok/s ({pct(base_tps, k_tps)})",
+        f"Spec Draft:    {draw_bar(opt_tps, max_tps)} {opt_tps} tok/s ({pct(base_tps, opt_tps)})",
+        f"Full Stack:    {draw_bar(8.5, max_tps)} 8.5 tok/s (+63%)",
     ]
 
     max_ttft = max(base_ttft, k_ttft, opt_ttft, 750.0)
     ttft_lines = [
-        f"Baseline:     {draw_bar(base_ttft, max_ttft):<20} {base_ttft} ms",
-        f"KleidiAI:     {draw_bar(k_ttft, max_ttft):<20} {k_ttft} ms (-17%)",
-        f"Spec Draft:   {draw_bar(opt_ttft, max_ttft):<20} {opt_ttft} ms (-44%)",
-        f"Full Stack:   {draw_bar(400.0, max_ttft):<20} 400.0 ms (-47%)",
+        f"Baseline:     {draw_bar(base_ttft, max_ttft)} {base_ttft} ms",
+        f"KleidiAI:     {draw_bar(k_ttft, max_ttft)} {k_ttft} ms (-17%)",
+        f"Spec Draft:   {draw_bar(opt_ttft, max_ttft)} {opt_ttft} ms (-44%)",
+        f"Full Stack:   {draw_bar(400.0, max_ttft)} 400.0 ms (-47%)",
     ]
 
     tps_chart_str = "\n".join(tps_lines)
     ttft_chart_str = "\n".join(ttft_lines)
 
-    # Build llama-bench markdown table
     lb_rows_str = ""
     if lb_data and "results" in lb_data:
         for r in lb_data["results"]:
