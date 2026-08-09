@@ -13,6 +13,7 @@ Configs:
 Output: results/llamacpp_results.json
 """
 import subprocess, time, json, statistics, re, shutil, os, platform, argparse
+from datetime import datetime
 from pathlib import Path
 import requests
 
