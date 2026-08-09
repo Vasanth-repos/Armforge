@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-import psutil, json, glob, os, time, requests, platform
+import psutil, json, glob, os, time, requests, platform, subprocess
 from datetime import datetime
 
 app = FastAPI(title="ArmForge — On-Device Mobile AI Optimization Platform")
@@ -28,7 +28,6 @@ def get_arm_features():
     except Exception:
         pass
     
-    # Fallback feature detection for ARM client devices / Windows on ARM
     if not features:
         features = ["fp", "asimd", "evtstrm", "aes", "pmull", "sha1", "sha2", "crc32", "atomics", "fphp", "asimdhp", "cpuid", "asimddp", "i8mm"]
     return features
@@ -43,7 +42,6 @@ def load_results():
         except Exception:
             pass
     
-    # Standard default benchmark baseline data if no JSON files exist yet
     if not out:
         out = [
             {
@@ -101,6 +99,70 @@ def get_hardware_name():
         return "ARM64 Client Laptop"
     return "ARM64 Client Device"
 
+def ensure_server_running(port: int):
+    """Auto-spawn requested llama-server if port is not active."""
+    health_url = f"http://localhost:{port}/health"
+    try:
+        r = requests.get(health_url, timeout=1.5)
+        if r.status_code == 200:
+            return True
+    except Exception:
+        pass
+
+    # Server not active on requested port — auto-spawn background process
+    model = os.path.expanduser("~/llama.cpp/models/main_model.gguf")
+    threads = get_optimal_threads()
+
+    if port == 8001:
+        server_bin = os.path.expanduser("~/llama.cpp/build_baseline/bin/llama-server")
+        if not os.path.exists(server_bin):
+            # Auto build baseline if missing
+            subprocess.run(["bash", "scripts/01b_build_baseline.sh"], check=False)
+        
+        cmd = [
+            server_bin,
+            "-m", model,
+            "-t", str(threads),
+            "-ngl", "0",
+            "--load-mode", "mlock",
+            "-c", "2048",
+            "--host", "0.0.0.0",
+            "--port", "8001"
+        ]
+        print("Auto-launching Baseline model server on port 8001...")
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    
+    else:
+        # Default port 8000 (KleidiAI)
+        server_bin = os.path.expanduser("~/llama.cpp/build/bin/llama-server")
+        if not os.path.exists(server_bin):
+            subprocess.run(["bash", "scripts/01_build_llamacpp.sh"], check=False)
+
+        cmd = [
+            server_bin,
+            "-m", model,
+            "-t", str(threads),
+            "-ngl", "0",
+            "--load-mode", "mlock",
+            "-b", "512",
+            "-c", "2048",
+            "--host", "0.0.0.0",
+            "--port", "8000"
+        ]
+        print("Auto-launching KleidiAI model server on port 8000...")
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # Wait for server to bind & load model into memory
+    for _ in range(30):
+        time.sleep(1)
+        try:
+            r = requests.get(f"http://localhost:{port}/health", timeout=1.5)
+            if r.status_code == 200:
+                return True
+        except Exception:
+            pass
+    return False
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     """Clean handler for browser favicon requests."""
@@ -113,7 +175,6 @@ async def dashboard(request: Request):
     mem = psutil.virtual_memory()
     results = load_results()
     
-    # Calculate performance gains vs baseline
     baseline_tps = 20.08
     optimized_tps = 36.61
     baseline_ttft = 750.0
@@ -225,8 +286,17 @@ async def export_markdown():
 
 @app.post("/api/generate")
 async def generate_stream(req: GenerateRequest):
-    """Proxy streaming completion request to local llama-server."""
-    target_url = f"http://localhost:{req.port}/v1/completions"
+    """Proxy streaming completion request to local llama-server with auto-spawn fallback."""
+    target_port = req.port
+    
+    # Auto-spawn server if requested port is not running
+    server_ready = ensure_server_running(target_port)
+    if not server_ready:
+        def err_stream():
+            yield f"data: [ERROR] Failed to start model server on port {target_port}. Please run: bash scripts/start_baseline_server.sh\n\n"
+        return StreamingResponse(err_stream(), media_type="text/event-stream")
+
+    target_url = f"http://localhost:{target_port}/v1/completions"
 
     def stream_generator():
         payload = {
