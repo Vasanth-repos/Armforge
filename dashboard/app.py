@@ -45,7 +45,6 @@ def parse_summary_md():
                 k_tps, k_ttft = 8.1, 620.0
                 s_tps, s_ttft = 8.0, 420.0
 
-                # Parse lines: e.g. | [1] Baseline ... | 5.2 tok/s | 750.0 ms |
                 for line in content.splitlines():
                     if "[1] Baseline" in line:
                         m = re.search(r'([\d\.]+)\s*tok/s.*?([\d\.]+)\s*ms', line)
@@ -91,7 +90,6 @@ def parse_summary_md():
     return None
 
 def load_results():
-    # Try parsing JSON benchmark files first
     files = glob.glob("results/bench_*.json") + glob.glob("../results/bench_*.json") + glob.glob("armforge/results/bench_*.json")
     out = []
     for fp in sorted(files):
@@ -105,12 +103,10 @@ def load_results():
     if out:
         return out
 
-    # Try parsing SUMMARY.md
     summary_results = parse_summary_md()
     if summary_results:
         return summary_results
 
-    # Fallback to empirical benchmark obtained values
     return [
         {
             "timestamp": "2026-08-09 19:30:00",
@@ -243,22 +239,30 @@ async def dashboard(request: Request):
     results = load_results()
     
     baseline_tps = 5.2
-    optimized_tps = 8.1
+    kleidiai_tps = 8.1
+    optimized_tps = 8.0
+    
     baseline_ttft = 750.0
+    kleidiai_ttft = 620.0
     optimized_ttft = 420.0
     
     for r in results:
-        if r.get("mode") == "baseline":
+        mode = r.get("mode")
+        if mode == "baseline":
             baseline_tps = r.get("throughput_tps", baseline_tps)
             baseline_ttft = r.get("ttft_ms", baseline_ttft)
-        elif r.get("mode") in ["kleidiai", "optimized"]:
-            if r.get("throughput_tps", 0) > optimized_tps:
-                optimized_tps = r.get("throughput_tps")
-            if r.get("ttft_ms", 9999) < optimized_ttft:
-                optimized_ttft = r.get("ttft_ms")
+        elif mode == "kleidiai":
+            kleidiai_tps = r.get("throughput_tps", kleidiai_tps)
+            kleidiai_ttft = r.get("ttft_ms", kleidiai_ttft)
+        elif mode == "optimized":
+            optimized_tps = r.get("throughput_tps", optimized_tps)
+            optimized_ttft = r.get("ttft_ms", optimized_ttft)
 
-    tps_pct = round(((optimized_tps - baseline_tps) / baseline_tps) * 100, 1) if baseline_tps > 0 else 55.8
-    ttft_pct = round(((baseline_ttft - optimized_ttft) / baseline_ttft) * 100, 1) if baseline_ttft > 0 else 44.0
+    max_tps = max(kleidiai_tps, optimized_tps)
+    min_ttft = min(kleidiai_ttft, optimized_ttft)
+
+    tps_pct = round(((max_tps - baseline_tps) / baseline_tps) * 100, 1) if baseline_tps > 0 else 55.8
+    ttft_pct = round(((baseline_ttft - min_ttft) / baseline_ttft) * 100, 1) if baseline_ttft > 0 else 44.0
 
     model_info = {
         "main_model": "Llama-3.2-3B-Instruct (On-Device)",
@@ -282,8 +286,8 @@ async def dashboard(request: Request):
             "Memory Locking (--load-mode mlock)",
             "Zero Cloud Dependency (100% Offline)"
         ],
-        "expected_tps": f"{optimized_tps} tok/s",
-        "expected_ttft": f"{optimized_ttft} ms"
+        "expected_tps": f"{max_tps} tok/s",
+        "expected_ttft": f"{min_ttft} ms"
     }
 
     return templates.TemplateResponse("index.html", {
@@ -301,9 +305,13 @@ async def dashboard(request: Request):
         "tps_pct":          tps_pct,
         "ttft_pct":         ttft_pct,
         "baseline_tps":     baseline_tps,
+        "kleidiai_tps":     kleidiai_tps,
         "optimized_tps":    optimized_tps,
+        "max_tps":          max_tps,
         "baseline_ttft":    baseline_ttft,
+        "kleidiai_ttft":    kleidiai_ttft,
         "optimized_ttft":   optimized_ttft,
+        "min_ttft":         min_ttft,
         "model_info":       model_info,
         "recommendation":   recommendation,
         "timestamp":        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

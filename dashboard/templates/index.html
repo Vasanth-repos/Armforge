@@ -84,8 +84,10 @@
        data-cpu="{{ cpu_pct }}" 
        data-mem="{{ mem_pct }}" 
        data-baseline-tps="{{ baseline_tps }}" 
+       data-kleidiai-tps="{{ kleidiai_tps }}" 
        data-optimized-tps="{{ optimized_tps }}" 
        data-baseline-ttft="{{ baseline_ttft }}" 
+       data-kleidiai-ttft="{{ kleidiai_ttft }}" 
        data-optimized-ttft="{{ optimized_ttft }}" 
        class="hidden"></div>
 
@@ -690,9 +692,11 @@
     const configEl = document.getElementById("appConfig");
     const cpuVal = parseFloat(configEl.getAttribute("data-cpu")) || 25;
     const memVal = parseFloat(configEl.getAttribute("data-mem")) || 40;
-    const baselineTps = parseFloat(configEl.getAttribute("data-baseline-tps")) || 20.08;
-    const optimizedTps = parseFloat(configEl.getAttribute("data-optimized-tps")) || 36.61;
+    const baselineTps = parseFloat(configEl.getAttribute("data-baseline-tps")) || 5.2;
+    const kleidiaiTps = parseFloat(configEl.getAttribute("data-kleidiai-tps")) || 8.1;
+    const optimizedTps = parseFloat(configEl.getAttribute("data-optimized-tps")) || 8.0;
     const baselineTtft = parseFloat(configEl.getAttribute("data-baseline-ttft")) || 750.0;
+    const kleidiaiTtft = parseFloat(configEl.getAttribute("data-kleidiai-ttft")) || 620.0;
     const optimizedTtft = parseFloat(configEl.getAttribute("data-optimized-ttft")) || 420.0;
 
     document.getElementById("cpuBar").style.width = cpuVal + "%";
@@ -718,7 +722,7 @@
         labels: ['Baseline (vanilla)', '+ KleidiAI Kernels', '+ KleidiAI + Speculative'],
         datasets: [{
           label: 'Throughput (tokens/sec)',
-          data: [baselineTps, optimizedTps, optimizedTps],
+          data: [baselineTps, kleidiaiTps, optimizedTps],
           backgroundColor: ['rgba(107, 114, 128, 0.5)', 'rgba(16, 185, 129, 0.8)', 'rgba(6, 182, 212, 0.8)'],
           borderColor: ['#9CA3AF', '#10B981', '#06B6D4'],
           borderWidth: 1,
@@ -743,7 +747,7 @@
         labels: ['Baseline (vanilla)', '+ KleidiAI Kernels', '+ KleidiAI + Speculative'],
         datasets: [{
           label: 'TTFT Latency (ms)',
-          data: [baselineTtft, 620.0, optimizedTtft],
+          data: [baselineTtft, kleidiaiTtft, optimizedTtft],
           backgroundColor: ['rgba(239, 68, 68, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(6, 182, 212, 0.8)'],
           borderColor: ['#EF4444', '#3B82F6', '#06B6D4'],
           borderWidth: 1,
