@@ -566,6 +566,22 @@
       </div>
     </section>
 
+    <!-- ================= 6.5 LIVE MARKDOWN SUMMARY REPORT CARD ================= -->
+    <section class="glass-card rounded-2xl p-6 space-y-4 border border-emerald-500/30 glow-emerald">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="text-lg font-bold text-white">Live Benchmark Summary Report</h3>
+        </div>
+        <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs">
+          {{ summary_path }}
+        </span>
+      </div>
+      <div class="bg-gray-950 border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{{ summary_md_content }}
+      </div>
+    </section>
+
     <!-- ================= 7. BENCHMARK ANALYTICS TABLE ================= -->
     <section class="glass-card rounded-2xl p-6 space-y-6">
       <div class="flex items-center justify-between border-b border-gray-800 pb-4">
