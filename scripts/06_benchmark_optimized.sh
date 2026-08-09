@@ -25,8 +25,7 @@ pkill -f llama-server 2>/dev/null || true; sleep 2
   --load-mode mlock \
   -b 512 \
   -c 2048 \
-  --host 0.0.0.0 --port 8000 \
-  --log-format json &
+  --host 0.0.0.0 --port 8000 &
 SERVER_PID=$!
 echo "Waiting 30s for both models to load..."
 sleep 30

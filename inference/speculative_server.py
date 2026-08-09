@@ -43,7 +43,6 @@ def start(port=8000, context=2048, draft_max=5):
         "-c",                 str(context),
         "--host",             "0.0.0.0",
         "--port",             str(port),
-        "--log-format",       "json",
     ]
 
     print(f"Starting speculative decoding server on :{port}")
