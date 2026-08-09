@@ -157,16 +157,15 @@ def ensure_server_running(port: int):
 
     if port == 8001:
         server_bin = find_binary("llama-server", "build_baseline")
-        model = find_model("Llama-3.2-3B-Instruct-Q8_0.gguf")
+        model = find_model("Llama-3.2-3B-Instruct-Q4_K_M.gguf")
         if not os.path.exists(model):
-            model = find_model("Llama-3.2-3B-Instruct-Q4_K_M.gguf")
+            model = find_model("Llama-3.2-3B-Instruct-Q8_0.gguf")
         
         cmd = [
             server_bin,
             "-m", model,
             "-t", threads,
             "-ngl", "0",
-            "--load-mode", "mlock",
             "-c", "2048",
             "--host", "0.0.0.0",
             "--port", "8001"
@@ -186,7 +185,6 @@ def ensure_server_running(port: int):
             "-m", model,
             "-t", threads,
             "-ngl", "0",
-            "--load-mode", "mlock",
             "-b", "512",
             "-c", "2048",
             "--host", "0.0.0.0",

@@ -33,7 +33,6 @@ exec $KLEIDIAI_SERVER \
   -m "$MODEL" \
   -t "$T" \
   -ngl 0 \
-  --load-mode mlock \
   -b 512 \
   -c 2048 \
   --host 0.0.0.0 --port 8000

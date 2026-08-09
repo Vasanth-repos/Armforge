@@ -11,10 +11,10 @@ cd "$ARMFORGE_DIR"
 BASELINE_SERVER=~/llama.cpp/build_baseline/bin/llama-server
 [ -f "$BASELINE_SERVER" ] || BASELINE_SERVER=~/llama.cpp/build/bin/llama-server
 
-MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
-[ -f "$MODEL" ] || MODEL="$ARMFORGE_DIR/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
-[ -f "$MODEL" ] || MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
 [ -f "$MODEL" ] || MODEL="$ARMFORGE_DIR/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+[ -f "$MODEL" ] || MODEL="$HOME/armforge/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
+[ -f "$MODEL" ] || MODEL="$ARMFORGE_DIR/models/Llama-3.2-3B-Instruct-Q8_0.gguf"
 
 if [ ! -f "$BASELINE_SERVER" ]; then
   echo "Baseline llama-server binary not found! Building baseline server now..."
@@ -35,6 +35,5 @@ exec $BASELINE_SERVER \
   -m "$MODEL" \
   -t "$T" \
   -ngl 0 \
-  --load-mode mlock \
   -c 2048 \
   --host 0.0.0.0 --port 8001
