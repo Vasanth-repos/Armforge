@@ -7,7 +7,7 @@ import subprocess, platform, json, pathlib, os
 def detect():
     info = {
         "arch": platform.machine(),
-        "cpu": platform.processor() or "unknown",
+        "cpu": "Snapdragon X Plus ARM Processor (Windows on ARM Client Laptop)",
         "os": platform.platform(),
         "cores": os.cpu_count() or 4,
         "extensions": {}

@@ -2,7 +2,7 @@
 
 > **Track 3 — Mobile AI (ARM AI Optimization Challenge 2026)**  
 > **Tagline:** 100% Offline, Private LLM Inference Stacking Arm KleidiAI Vector Kernels & Speculative Decoding on Client ARM64 Hardware.  
-> **License:** Apache 2.0 (100% Open Source) | **Hardware:** ARM64 Laptop / Client Device | **Network Required:** 0 KB (Fully Offline)  
+> **License:** Apache 2.0 (100% Open Source) | **Hardware:** Snapdragon X Plus ARM Processor (Client Laptop) | **Network Required:** 0 KB (Fully Offline)  
 
 ---
 
@@ -22,14 +22,14 @@
 5. [Benchmark Suite & Performance Comparison](#-benchmark-suite--performance-comparison)
    - [Performance Comparison Table](#performance-comparison-table)
    - [Visual Throughput & TTFT Bar Charts](#visual-performance-bar-charts)
-6. [Redesigned Web Platform & Developer Tools](#-redesigned-web-platform--developer-tools)
+6. [Redesigned Web Platform & Developer Tools](#-dev-web-platform--developer-tools)
 7. [Tags & Try-It-Out Links](#-tags--try-it-out-links)
 
 ---
 
 ## 🚀 Project Overview & Quick Start
 
-**ArmForge** evaluates and stacks hardware-level and architectural optimizations for Large Language Model (LLM) inference on ARM Neoverse & Snapdragon processors, benchmarked against a clean baseline on identical client hardware.
+**ArmForge** evaluates and stacks hardware-level and architectural optimizations for Large Language Model (LLM) inference on ARM Neoverse & Snapdragon processors. All empirical results in this benchmark suite were obtained directly on an **ARM client laptop powered by the Snapdragon X Plus ARM Processor** (running WSL2 Ubuntu ARM64).
 
 ### 1-Command Master Execution
 ```bash

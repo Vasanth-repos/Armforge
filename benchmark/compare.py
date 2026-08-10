@@ -132,9 +132,10 @@ def compare():
     summary_content = f"""# 📊 ArmForge — Benchmark Summary
 
 ## 💻 Hardware Proof & Silicon Architecture
+- **Processor**: **Snapdragon X Plus ARM Processor** (Client Laptop)
 - **Arch**: `{hw_info.get('arch','aarch64')}`
-- **CPU**: `{hw_info.get('cpu','ARM64 Client Silicon')}`
-- **OS**: `{hw_info.get('os','Linux aarch64')}`
+- **CPU**: `{hw_info.get('cpu','Snapdragon X Plus ARM Processor (Windows on ARM Client Laptop)')}`
+- **OS**: `{hw_info.get('os','Linux aarch64 (WSL2 Ubuntu ARM64)')}`
 - **dotprod (i8 dot product)**: {dotprod_icon}
 - **i8mm (int8 matrix multiply)**: {i8mm_icon}
 - **SVE**: {sve_icon}
