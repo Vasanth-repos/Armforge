@@ -11,17 +11,17 @@
 2. [Complete Step-by-Step Operations Guide](#-complete-step-by-step-operations-guide)
    - [Option A: Windows on ARM via WSL2 (Recommended)](#option-a-windows-on-arm-via-wsl2-recommended)
    - [Option B: Local ARM Linux / Mobile Workstation](#option-b-local-arm-linux--mobile-workstation)
-3. [About the Project (Hackathon Story)](#-about-the-project)
+3. [About the Project](#-about-the-project)
    - [Inspiration](#inspiration)
    - [How I Built It](#how-i-built-it)
    - [What I Learned](#what-i-learned)
    - [Challenges Faced](#challenges-faced)
 4. [Technical Build & Architecture Specification](#-technical-build--architecture-specification)
-   - [Optimizations Matrix](#optimizations--fixes-matrix)
+   - [Optimizations & Fixes Matrix](#optimizations--fixes-matrix)
    - [Repository Structure](#repository-structure)
 5. [Benchmark Suite & Performance Comparison](#-benchmark-suite--performance-comparison)
    - [Performance Comparison Table](#performance-comparison-table-empirical-results-obtained)
-   - [Visual Throughput & TTFT Bar Charts](#visual-performance-bar-charts)
+   - [Visual Performance Bar Charts](#visual-performance-bar-charts)
 6. [Redesigned Web Platform & Developer Tools](#-redesigned-web-platform--developer-tools)
 7. [Tags & Try-It-Out Links](#-tags--try-it-out-links)
 
@@ -103,7 +103,7 @@ $$\text{Vocabulary Match: } \mathcal{V}_{\text{verifier}} \equiv \mathcal{V}_{\t
 #### Phase 3: Dynamic Memory Channel Tuning
 To prevent memory channel congestion on client chips, I created `03_tune_threads.sh` using `llama-bench` to sweep threads $T \in \{1, 2, 3, 4\}$. Throughput follows the client RAM bandwidth saturation curve:
 
-$$\text{Throughput}(T) = \min\left(T \cdot \mu_{\text{core\_bandwidth}}, \mathcal{B}_{\text{RAM\_max}}\right)$$
+$$\text{Throughput}(T) = \min\left(T \cdot \mu_{\text{core-bandwidth}}, \mathcal{B}_{\text{RAM-max}}\right)$$
 
 #### Phase 4: Local Developer Interface
 I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU/RAM meters, Chart.js performance graphs, a recommendation engine score (98/100), and a live streaming prompt playground powered by Server-Sent Events (SSE).
@@ -112,7 +112,7 @@ I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU
 
 1. **Hardware Vector Extensions Are Essential for Client AI:** Integrating Arm KleidiAI unlocked a **+56% throughput boost** (jumping from 5.2 tok/s to 8.1 tok/s) without modifying model weights.
 2. **Speculative Decoding on CPU Solves TTFT Latency:** On client CPUs, verification occurs sequentially:
-   $$T_{\text{step}} = \sum_{i=1}^{N} T_{\text{draft\_step}, i} + T_{\text{verifier\_verify}}$$
+   $$T_{\text{step}} = \sum_{i=1}^{N} T_{\text{draft-step}, i} + T_{\text{verifier-verify}}$$
    While generation throughput remains flat, prefill overlap cuts TTFT latency by **-44%** (from 750 ms down to 420 ms).
 3. **OS Memory Locking Prevents Latency Spikes:** Enforcing `--load-mode mlock` prevents the client operating system from swapping model weights to disk, ensuring smooth, predictable generation.
 
