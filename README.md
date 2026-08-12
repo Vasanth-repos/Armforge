@@ -13,16 +13,16 @@
    - [Option B: Local ARM Linux / Mobile Workstation](#option-b-local-arm-linux--mobile-workstation)
 3. [About the Project (Hackathon Story)](#-about-the-project)
    - [Inspiration](#inspiration)
-   - [How I built it](#how-i-built-it)
-   - [What I learned](#what-i-learned)
-   - [Challenges faced](#challenges-faced)
+   - [How I Built It](#how-i-built-it)
+   - [What I Learned](#what-i-learned)
+   - [Challenges Faced](#challenges-faced)
 4. [Technical Build & Architecture Specification](#-technical-build--architecture-specification)
    - [Optimizations Matrix](#optimizations--fixes-matrix)
    - [Repository Structure](#repository-structure)
 5. [Benchmark Suite & Performance Comparison](#-benchmark-suite--performance-comparison)
-   - [Performance Comparison Table](#performance-comparison-table)
+   - [Performance Comparison Table](#performance-comparison-table-empirical-results-obtained)
    - [Visual Throughput & TTFT Bar Charts](#visual-performance-bar-charts)
-6. [Redesigned Web Platform & Developer Tools](#-dev-web-platform--developer-tools)
+6. [Redesigned Web Platform & Developer Tools](#-redesigned-web-platform--developer-tools)
 7. [Tags & Try-It-Out Links](#-tags--try-it-out-links)
 
 ---
@@ -44,7 +44,7 @@ bash scripts/run_all.sh
 
 ### Option A: Windows on ARM via WSL2 (Recommended)
 
-Windows on ARM devices (Snapdragon X Elite / X Plus, Surface Pro 11, Lenovo Yoga Slim 7x) run ArmForge natively at 100% full hardware speed using WSL2 Ubuntu ARM64.
+Windows on ARM devices (Snapdragon X Elite / X Plus, Surface Pro 11, Lenovo Yoga Slim 7x) run ArmForge natively at full hardware speed using WSL2 Ubuntu ARM64.
 
 1. **Install WSL2 Ubuntu ARM64:** Open PowerShell as Administrator and run:
    ```powershell
@@ -110,7 +110,7 @@ I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU
 
 ### What I Learned
 
-1. **Hardware Vector Extensions Are Essential for Client AI:** Integrating Arm KleidiAI unlocked an **+56% throughput boost** (jumping from 5.2 tok/s to 8.1 tok/s) without modifying model weights.
+1. **Hardware Vector Extensions Are Essential for Client AI:** Integrating Arm KleidiAI unlocked a **+56% throughput boost** (jumping from 5.2 tok/s to 8.1 tok/s) without modifying model weights.
 2. **Speculative Decoding on CPU Solves TTFT Latency:** On client CPUs, verification occurs sequentially:
    $$T_{\text{step}} = \sum_{i=1}^{N} T_{\text{draft\_step}, i} + T_{\text{verifier\_verify}}$$
    While generation throughput remains flat, prefill overlap cuts TTFT latency by **-44%** (from 750 ms down to 420 ms).
@@ -131,14 +131,14 @@ I built a FastAPI monitoring platform (`localhost:8080`) featuring real-time CPU
 |---|---|---|---|
 | 1 | Speculative decoding framing | Claimed throughput win on CPU | Framed as TTFT/latency play; isolated from KleidiAI in results |
 | 2 | Benchmark warmup | No warmup — first result skewed | Warmup call before recording any measurements |
-| 3 | Thread tuning | Fixed `nproc-1` | Sweep 1,2,3,4 threads via `llama-bench` non-interactive |
+| 3 | Thread tuning | Fixed `nproc-1` | Sweep 1, 2, 3, 4 threads via `llama-bench` non-interactive |
 | 4 | Model locking | Deprecated `--mlock` | Updated to `--load-mode mlock` |
 | 5 | GPU layer ambiguity | Implicit | `-ngl 0` explicit on all server calls |
 | 6 | KleidiAI batch size | Default batch | `-b 512` added to activate dotprod kernel paths |
 | 7 | Windows UNC CMake npm error | Failed on `\\wsl.localhost` | Added `-DLLAMA_BUILD_SERVER_WEBUI=OFF` |
 | 8 | CLI argument deprecation | `--draft-max 5`, `--log-format` | Updated to `--spec-draft-n-max 5`, removed `--log-format` |
-| 9 | UI/UX Quality & Math | Generic metrics UI | Redesigned Mobile AI developer platform (`:8080`) |
-| 10 | On-Demand Server Auto-Spawn | Server manual launch only | Auto-spawn background server on port 8000/8001 if inactive |
+| 9 | UI/UX quality & math | Generic metrics UI | Redesigned Mobile AI developer platform (`:8080`) |
+| 10 | On-demand server auto-spawn | Server manual launch only | Auto-spawn background server on port 8000/8001 if inactive |
 
 ### Repository Structure
 
@@ -187,7 +187,7 @@ armforge/
 
 ### Performance Comparison Table (Empirical Results Obtained)
 
-| Configuration | Throughput | TTFT | vs Baseline (tps) | vs Baseline (ttft) | Primary Focus |
+| Configuration | Throughput | TTFT | vs Baseline (TPS) | vs Baseline (TTFT) | Primary Focus |
 |---|---|---|---|---|---|
 | **[1] Baseline (vanilla `llama.cpp`, KleidiAI OFF)** | 5.2 tok/s | 750.0 ms | — | — | Reference baseline |
 | **[2] + KleidiAI dotprod kernels** | **8.1 tok/s** | 620.0 ms | **+56%** | −17% | **Throughput Acceleration** |
@@ -225,4 +225,3 @@ Baseline:     #################### 750.0 ms
 
 ### Links
 * **Main GitHub Repository:** `https://github.com/Vasanth-repos/Armforge.git`
-* **Root Specification Repo:** `https://github.com/Vasanth-repos/Arm_Forge.git`
