@@ -1,6 +1,5 @@
 # 🦾 ArmForge — On-Device ARM64 LLM Optimization Engine
-
-> **Track 3 — Mobile AI (ARM AI Optimization Challenge 2026)**  
+  
 > **Tagline:** 100% Offline, Private LLM Inference Stacking Arm KleidiAI Vector Kernels & Speculative Decoding on Client ARM64 Hardware.  
 > **License:** Apache 2.0 (100% Open Source) | **Hardware:** Snapdragon X Plus ARM Processor (Client Laptop) | **Network Required:** 0 KB (Fully Offline)  
 
